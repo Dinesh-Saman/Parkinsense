@@ -1,0 +1,129 @@
+/* Navbar Base */
+.navbar {
+  background: linear-gradient(90deg, #004aad, #0077ff);
+  color: white;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Increased height + spacing */
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: auto;
+  padding: 18px 30px; /* Increased from 12px */
+  min-height: 80px;   /* Ensures a taller navbar */
+}
+
+/* Logo */
+.navbar-logo a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: white;
+}
+
+.logo-icon {
+  font-size: 2rem; /* Slightly larger */
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+/* Navigation Links */
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 35px;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-links li a {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s, transform 0.2s;
+}
+
+.navbar-links li a:hover {
+  color: #e1eaff;
+  transform: translateY(-2px);
+}
+
+.navbar-links li.active a {
+  border-bottom: 2px solid #ffffff;
+  padding-bottom: 3px;
+}
+
+/* Right-side Icons */
+.navbar-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-icon {
+  color: white;
+  font-size: 1.7rem;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.nav-icon:hover {
+  color: #cce0ff;
+  transform: scale(1.1);
+}
+
+/* Hamburger (Mobile) */
+.menu-toggle {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.8rem;
+  display: none;
+  cursor: pointer;
+}
+
+/* Responsive Styles */
+@media (max-width: 900px) {
+  .navbar-container {
+    flex-wrap: wrap;
+  }
+
+  .navbar-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    background: #004aad;
+    padding: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .navbar-links.active {
+    display: flex;
+  }
+
+  .navbar-links li {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .navbar-icons {
+    margin-left: auto;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+}
