@@ -1,10 +1,19 @@
 import React from "react";
-import { Facebook, Twitter, Linkedin, Mail, Phone, MapPin, ArrowRight, Heart } from "lucide-react";
+import {
+  Facebook,
+  Twitter,
+  Linkedin,
+  Mail,
+  Phone,
+  MapPin,
+  ArrowRight,
+  Heart,
+} from "lucide-react";
 
 const Footer = () => {
   const handleNavigation = (path) => {
     console.log(`Navigate to: ${path}`);
-    // In your actual app, use: navigate(path) or your router's navigation
+    // Use your router: navigate(path)
   };
 
   return (
@@ -50,27 +59,13 @@ const Footer = () => {
           animation: fadeInUp 0.8s ease-out backwards;
         }
 
-        .footer-section:nth-child(1) {
-          animation-delay: 0.1s;
-        }
-
-        .footer-section:nth-child(2) {
-          animation-delay: 0.2s;
-        }
-
-        .footer-section:nth-child(3) {
-          animation-delay: 0.3s;
-        }
+        .footer-section:nth-child(1) { animation-delay: 0.1s; }
+        .footer-section:nth-child(2) { animation-delay: 0.2s; }
+        .footer-section:nth-child(3) { animation-delay: 0.3s; }
 
         @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .footer-section h3 {
@@ -156,21 +151,13 @@ const Footer = () => {
           transform: translateX(4px);
         }
 
-        .links ul {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-
-        .links li {
-          margin-bottom: 14px;
-        }
+        .links ul { list-style: none; padding: 0; margin: 0; }
+        .links li { margin-bottom: 14px; }
 
         .links button {
           background: none;
           border: none;
           color: #cbd5e1;
-          text-decoration: none;
           font-size: 0.95rem;
           transition: all 0.3s ease;
           display: inline-flex;
@@ -198,9 +185,7 @@ const Footer = () => {
           padding-left: 28px;
         }
 
-        .links button:hover::before {
-          width: 20px;
-        }
+        .links button:hover::before { width: 20px; }
 
         .contact-item {
           display: flex;
@@ -303,12 +288,8 @@ const Footer = () => {
         }
 
         @keyframes heartbeat {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.1);
-          }
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
         }
 
         .footer-links {
@@ -324,9 +305,7 @@ const Footer = () => {
           transition: color 0.3s ease;
         }
 
-        .footer-links a:hover {
-          color: #a78bfa;
-        }
+        .footer-links a:hover { color: #a78bfa; }
 
         .disclaimer {
           background: rgba(139, 92, 246, 0.1);
@@ -350,30 +329,14 @@ const Footer = () => {
             gap: 40px;
             padding: 60px 30px 30px;
           }
-
-          .footer-bottom {
-            padding: 24px 30px;
-          }
-
-          .footer-bottom-content {
-            flex-direction: column;
-            text-align: center;
-          }
+          .footer-bottom { padding: 24px 30px; }
+          .footer-bottom-content { flex-direction: column; text-align: center; }
         }
 
         @media (max-width: 640px) {
-          .footer-container {
-            padding: 40px 20px 20px;
-          }
-
-          .footer-section h3 {
-            font-size: 1.25rem;
-          }
-
-          .social-icons a {
-            width: 40px;
-            height: 40px;
-          }
+          .footer-container { padding: 40px 20px 20px; }
+          .footer-section h3 { font-size: 1.25rem; }
+          .social-icons a { width: 40px; height: 40px; }
         }
       `}</style>
 
@@ -381,11 +344,11 @@ const Footer = () => {
         <div className="footer-bg-pattern"></div>
 
         <div className="footer-container">
-          {/* About Section */}
+          {/* About */}
           <div className="footer-section about">
             <div className="about-logo">
               <div className="logo-icon">PS</div>
-              <h3 style={{marginBottom: 0}}>ParkinSense</h3>
+              <h3 style={{ marginBottom: 0 }}>ParkinSense</h3>
             </div>
             <p>
               Empowering early detection of Parkinson's Disease with non-invasive,
@@ -409,44 +372,32 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Contact */}
           <div className="footer-section contact">
             <h3>Contact Us</h3>
             <div className="contact-item">
-              <div className="contact-icon">
-                <MapPin size={18} />
-              </div>
+              <div className="contact-icon"><MapPin size={18} /></div>
               <span>Colombo, Sri Lanka</span>
             </div>
             <div className="contact-item">
-              <div className="contact-icon">
-                <Phone size={18} />
-              </div>
+              <div className="contact-icon"><Phone size={18} /></div>
               <span>+94 77 123 4567</span>
             </div>
             <div className="contact-item">
-              <div className="contact-icon">
-                <Mail size={18} />
-              </div>
+              <div className="contact-icon"><Mail size={18} /></div>
               <span>info@parkinsense.lk</span>
             </div>
             <div className="social-icons">
-              <a href="#" aria-label="Facebook">
-                <Facebook size={20} />
-              </a>
-              <a href="#" aria-label="Twitter">
-                <Twitter size={20} />
-              </a>
-              <a href="#" aria-label="LinkedIn">
-                <Linkedin size={20} />
-              </a>
+              <a href="#" aria-label="Facebook"><Facebook size={20} /></a>
+              <a href="#" aria-label="Twitter"><Twitter size={20} /></a>
+              <a href="#" aria-label="LinkedIn"><Linkedin size={20} /></a>
             </div>
           </div>
         </div>
 
         <div className="footer-divider"></div>
 
-        {/* Footer Bottom */}
+        {/* Bottom */}
         <div className="footer-bottom">
           <div className="footer-bottom-content">
             <p className="copyright">
@@ -458,8 +409,12 @@ const Footer = () => {
               <a href="#">Cookie Policy</a>
             </div>
           </div>
+
+          {/* MDS-UPDRS Legal Disclaimer (Added Here) */}
           <div className="disclaimer">
-            <strong>⚠️ Medical Disclaimer:</strong> This tool is for screening purposes only and should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional for diagnosis.
+            <strong>Medical Disclaimer:</strong> This tool is for screening purposes only and should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional for diagnosis.
+            <br /><br />
+            <strong>MDS-UPDRS © 2008 International Parkinson and Movement Disorder Society. Stage prediction based on Goetz et al. (2015). For clinical use only.</strong>
           </div>
         </div>
       </footer>

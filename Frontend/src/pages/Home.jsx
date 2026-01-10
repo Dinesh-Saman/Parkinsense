@@ -14,14 +14,12 @@ import ContactUs from "../components/ContactUs";
 const Home = () => {
   return (
     <div className="home-container">
-      <Navbar />
       <HeroSection />
       <CoreFeatures />
       <Banner />
       <Testimonials />
       <BlogSection />
       <ContactUs />
-      <Footer />
     </div>
   );
 };

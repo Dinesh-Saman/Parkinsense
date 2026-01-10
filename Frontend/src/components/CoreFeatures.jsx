@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const CoreFeatures = () => {
   const [visibleCards, setVisibleCards] = useState([]);
   const sectionRef = useRef(null);
+  const navigate = useNavigate();
 
   const features = [
     {
@@ -53,6 +55,14 @@ const CoreFeatures = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  const handleCardClick = (index) => {
+    if (index === 1) {
+      navigate("/spiral-test");
+    } else if (index === 2) {
+      navigate("/diagnostic");
+    }
+  };
 
   return (
     <>
@@ -256,6 +266,11 @@ const CoreFeatures = () => {
           transform: scale(1);
         }
 
+        /* Make clickable cards look interactive */
+        .service-card.clickable {
+          cursor: pointer;
+        }
+
         @media (max-width: 1024px) {
           .services-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -303,13 +318,16 @@ const CoreFeatures = () => {
         </p>
         <div className="services-grid">
           {features.map((feature, index) => (
-            <div 
-              className={`service-card ${visibleCards.includes(index) ? 'visible' : ''}`}
+            <div
               key={index}
+              className={`service-card ${visibleCards.includes(index) ? 'visible' : ''} ${
+                index === 1 || index === 2 ? 'clickable' : ''
+              }`}
               style={{
                 '--card-color': feature.color,
                 '--card-color-light': `${feature.color}33`
               }}
+              onClick={() => handleCardClick(index)}
             >
               <span className="feature-badge">AI Powered</span>
               <div className="icon-wrapper">

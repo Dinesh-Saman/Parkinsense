@@ -1,0 +1,337 @@
+/* src/components/MDS-UPDRS/AssessmentForm.css */
+
+/* Reset and base styles for the component */
+.mds-updrs-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f7ff 0%, #f9fafb 100%) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+/* Header styles */
+.mds-header {
+  text-align: center !important;
+  margin-bottom: 3rem !important;
+}
+
+.mds-header h1 {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+  background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  margin-bottom: 0.5rem !important;
+}
+
+@media (min-width: 768px) {
+  .mds-header h1 {
+    font-size: 3rem !important;
+  }
+}
+
+/* Main card styles */
+.mds-card {
+  background: white !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(229, 231, 235, 0.5) !important;
+  overflow: hidden !important;
+  margin-bottom: 2rem !important;
+}
+
+/* Progress header */
+.mds-progress-header {
+  background: linear-gradient(90deg, #eff6ff 0%, #f5f3ff 100%) !important;
+  padding: 2rem !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.mds-step-dots {
+  display: flex !important;
+  justify-content: center !important;
+  margin-top: 2rem !important;
+  gap: 0.5rem !important;
+}
+
+.mds-step-button {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 5rem !important;
+  padding: 0.75rem !important;
+  border-radius: 0.75rem !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  position: relative !important;
+  background: transparent !important;
+}
+
+.mds-step-button.current {
+  background: white !important;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.15) !important;
+  border: 1px solid rgba(37, 99, 235, 0.2) !important;
+  transform: scale(1.05) !important;
+}
+
+.mds-step-button.completed {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+}
+
+.mds-step-button.disabled {
+  background: #f9fafb !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+}
+
+/* Form content area */
+.mds-content-area {
+  padding: 2rem !important;
+}
+
+@media (min-width: 768px) {
+  .mds-content-area {
+    padding: 3rem !important;
+  }
+}
+
+/* Patient info section */
+.mds-patient-info {
+  text-align: center !important;
+  margin-bottom: 2rem !important;
+}
+
+.mds-patient-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 4rem !important;
+  height: 4rem !important;
+  background: #dbeafe !important;
+  border-radius: 50% !important;
+  margin-bottom: 1rem !important;
+}
+
+.mds-form-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 1.5rem !important;
+}
+
+@media (min-width: 768px) {
+  .mds-form-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+.mds-form-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+}
+
+.mds-form-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+}
+
+.mds-form-input {
+  width: 100% !important;
+  padding: 1rem !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.75rem !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  background: white !important;
+}
+
+.mds-form-input:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.mds-form-input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Location info */
+.mds-location-info {
+  background: #eff6ff !important;
+  border-radius: 0.75rem !important;
+  padding: 1.5rem !important;
+  margin-top: 1.5rem !important;
+}
+
+/* Navigation footer */
+.mds-navigation-footer {
+  background: #f9fafb !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding: 1.5rem !important;
+}
+
+.mds-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 0.75rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  gap: 0.5rem !important;
+}
+
+.mds-button-primary {
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%) !important;
+  color: white !important;
+}
+
+.mds-button-primary:hover:not(:disabled) {
+  background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3) !important;
+}
+
+.mds-button-secondary {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+.mds-button-secondary:hover {
+  background: #e5e7eb !important;
+}
+
+.mds-button-success {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+}
+
+.mds-button-success:hover:not(:disabled) {
+  background: linear-gradient(90deg, #059669 0%, #047857 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3) !important;
+}
+
+.mds-button:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* Footer */
+.mds-footer {
+  margin-top: 2rem !important;
+  text-align: center !important;
+  color: #6b7280 !important;
+  font-size: 0.875rem !important;
+}
+
+/* Progress bar */
+.mds-progress-container {
+  width: 100% !important;
+  background: #e5e7eb !important;
+  border-radius: 9999px !important;
+  height: 0.5rem !important;
+  overflow: hidden !important;
+  margin: 0.5rem 0 !important;
+}
+
+.mds-progress-bar {
+  height: 100% !important;
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%) !important;
+  border-radius: 9999px !important;
+  transition: width 0.5s ease !important;
+}
+
+/* Utility classes */
+.mds-flex-center {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.mds-flex-between {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.mds-gap-2 {
+  gap: 0.5rem !important;
+}
+
+.mds-gap-4 {
+  gap: 1rem !important;
+}
+
+.mds-mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.mds-mb-4 {
+  margin-bottom: 1rem !important;
+}
+
+.mds-mb-6 {
+  margin-bottom: 1.5rem !important;
+}
+
+.mds-mb-8 {
+  margin-bottom: 2rem !important;
+}
+
+.mds-text-sm {
+  font-size: 0.875rem !important;
+}
+
+.mds-text-lg {
+  font-size: 1.125rem !important;
+}
+
+.mds-text-xl {
+  font-size: 1.25rem !important;
+}
+
+.mds-text-2xl {
+  font-size: 1.5rem !important;
+}
+
+.mds-font-bold {
+  font-weight: 700 !important;
+}
+
+.mds-font-semibold {
+  font-weight: 600 !important;
+}
+
+.mds-text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.mds-text-gray-700 {
+  color: #374151 !important;
+}
+
+.mds-text-gray-800 {
+  color: #1f2937 !important;
+}
+
+.mds-bg-blue-50 {
+  background-color: #eff6ff !important;
+}
+
+.mds-rounded-xl {
+  border-radius: 0.75rem !important;
+}
+
+.mds-shadow-lg {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
