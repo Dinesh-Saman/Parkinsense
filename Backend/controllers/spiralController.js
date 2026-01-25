@@ -1,7 +1,6 @@
-// backend/controllers/spiralController.js
+// backend/controllers/spiralController.js  (or api/controllers/ if you moved it)
 const axios = require('axios');
 const FormData = require('form-data');
-const fs = require('fs');
 
 exports.analyzeSpiral = async (req, res) => {
   try {
@@ -9,15 +8,24 @@ exports.analyzeSpiral = async (req, res) => {
       return res.status(400).json({ error: "No image uploaded" });
     }
 
-    const form = new FormData();
-    form.append('image', fs.createReadStream(req.file.path));
+    const { buffer, originalname, mimetype } = req.file;
 
-    const response = await axios.post('http://localhost:5001/predict', form, {
-      headers: form.getHeaders(),
+    // Create FormData and append the buffer directly (no fs needed)
+    const form = new FormData();
+    form.append('image', buffer, {
+      filename: originalname,       // Required: gives the remote endpoint a file name
+      contentType: mimetype,        // Helps the remote server know it's an image
     });
 
-    // Clean up uploaded file
-    fs.unlinkSync(req.file.path);
+    // Send to your ML prediction endpoint
+    // Change URL to your actual deployed ML service (see recommendations below)
+    const response = await axios.post('http://localhost:5001/predict', form, {
+      headers: {
+        ...form.getHeaders(),       // Includes correct multipart boundary
+      },
+      maxContentLength: Infinity,   // Optional: allow large images
+      maxBodyLength: Infinity,
+    });
 
     const { prediction, confidence } = response.data;
 
@@ -29,9 +37,14 @@ exports.analyzeSpiral = async (req, res) => {
         : "Spiral appears normal"
     });
 
-
   } catch (error) {
     console.error("Spiral analysis error:", error.message);
-    res.status(500).json({ error: "Failed to analyze spiral drawing" });
+    if (error.response) {
+      console.error("ML endpoint response:", error.response.data);
+    }
+    res.status(500).json({ 
+      error: "Failed to analyze spiral drawing",
+      details: error.message 
+    });
   }
 };
