@@ -130,10 +130,10 @@ const Summary = ({ formData, location, onSubmit, loading, onPrev }) => {
 
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const res = await axios.post("https://parkinsensebackend-jqkosd5t7-dineshs-projects-d4453a53.vercel.app/api/assessments", payload);
+      const res = await axios.post("http://localhost:5000/api/assessments", payload);
       const assessmentId = res.data.data.id;
 
-      localStorage.removeItem("updrs-form");
+
       
       alert("✅ Assessment successfully submitted! Generating personalized recommendations...");
       
@@ -1868,7 +1868,7 @@ const Summary = ({ formData, location, onSubmit, loading, onPrev }) => {
           color: #991b1b;
           padding: 6px 12px;
           border-radius: 20px;
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 600;
           letter-spacing: 0.5px;
         }

@@ -5,13 +5,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import DoctorCard from "./DoctorCard";
 import MapView from "./MapView";
 import { useTranslation } from "react-i18next";
+import { ChevronLeft } from "lucide-react"; // ← nice arrow icon
 
 const RecommendationPage = () => {
   const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
-  const cardsRef = useRef(null); // Measure doctor cards height
-  const mapContainerRef = useRef(null); // Apply exact height to map
+  const cardsRef = useRef(null);
+  const mapContainerRef = useRef(null);
 
   const [recommendations, setRecommendations] = useState([]);
   const [patientStage, setPatientStage] = useState("");
@@ -32,7 +33,6 @@ const RecommendationPage = () => {
     fetch();
   }, [id, t]);
 
-  // Dynamically set map height = doctor cards height
   useEffect(() => {
     if (!loading && cardsRef.current && mapContainerRef.current) {
       const height = cardsRef.current.offsetHeight;
@@ -41,9 +41,41 @@ const RecommendationPage = () => {
   }, [recommendations, loading]);
 
   const styles = `
-    .page { min-height: 100vh; background: linear-gradient(135deg, #e0f7fa, #b2ebf2, #80deea); padding: 2rem 1rem; font-family: 'Segoe UI', sans-serif; }
+    .page { 
+      min-height: 100vh; 
+      background: linear-gradient(135deg, #e0f7fa, #b2ebf2, #80deea); 
+      padding: 2rem 1rem; 
+      font-family: 'Segoe UI', sans-serif; 
+    }
     .inner { max-width: 1200px; margin: 0 auto; }
-    .back { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; color: #1e40af; font-weight: 600; cursor: pointer; margin-bottom: 1.5rem; }
+    
+    /* Modern Back Button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(30, 64, 175, 0.08);
+      color: #1e40af;
+      border: 1px solid rgba(30, 64, 175, 0.2);
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 10px rgba(30, 64, 175, 0.1);
+    }
+    .back-btn:hover {
+      background: rgba(30, 64, 175, 0.15);
+      transform: translateX(-4px);
+      box-shadow: 0 6px 20px rgba(30, 64, 175, 0.2);
+      border-color: rgba(30, 64, 175, 0.4);
+    }
+    .back-btn:active {
+      transform: translateX(-2px);
+    }
+    
     .header { text-align: center; margin-bottom: 2rem; }
     .header h1 { font-size: 2.75rem; font-weight: 800; color: #7c3aed; }
     .stage { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; border-radius: 9999px; font-weight: 600; }
@@ -72,8 +104,13 @@ const RecommendationPage = () => {
 
       <div className="page">
         <div className="inner">
-          <button className="back" onClick={() => navigate(-1)}>
-            ← {t("back")}
+          {/* Modern Back Button with Arrow */}
+          <button 
+            className="back-btn"
+            onClick={() => navigate("/diagnostic")} // ← go back to assessment form
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+            {t("back")}
           </button>
 
           <div className="header">
@@ -115,7 +152,7 @@ const RecommendationPage = () => {
                 )}
               </div>
 
-              {/* Map - Same height as cards */}
+              {/* Map */}
               <div className="map-box">
                 <div className="map-head">
                   <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">

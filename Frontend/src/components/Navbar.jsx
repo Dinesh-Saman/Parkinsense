@@ -76,7 +76,7 @@ const Navbar = () => {
     { path: "/diagnostic", icon: <FaStethoscope />, label: t("diagnostic") },
     { path: "/spiral-test", icon: <FaDrawPolygon />, label: t("spiral_test") || "Spiral Test" },
     { path: "/voice-analysis", icon: <FaMicrophone />, label: t("voice_analysis") || "Voice Analysis" },
-    { path: "/about", icon: <FaInfoCircle />, label: t("about") },
+    { path: "/about-us", icon: <FaInfoCircle />, label: t("about") },
     { path: "/contact-us", icon: <FaEnvelope />, label: t("contact") },
   ];
 

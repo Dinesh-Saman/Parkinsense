@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import SpiralTestPage from "./pages/SpiralTestPage";   // ← NEW: Spiral Test Page
 import VoiceTestPage from "./pages/VoiceTestPage";
 import ContactUs from "./pages/Contact";
+import AboutUs from "./pages/AboutUs";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/voice-analysis" element={<VoiceTestPage />} />
 
           <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/about-us" element={<AboutUs />} />
         </Routes>
       </div>
     </Router>

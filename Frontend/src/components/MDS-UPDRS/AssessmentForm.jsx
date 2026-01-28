@@ -74,6 +74,9 @@ function AssessmentForm() {
     part4: new Map(),
   });
 
+  // Prevent flash of step 0 — wait until localStorage is restored
+  const [isRestored, setIsRestored] = useState(false);
+
   // Check if mobile on mount and resize
   useEffect(() => {
     const checkMobile = () => {
@@ -85,35 +88,40 @@ function AssessmentForm() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Load from localStorage
+  // Load from localStorage – restore everything before rendering UI
   useEffect(() => {
     const saved = localStorage.getItem("updrs-form");
-    if (!saved) return;
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        const restoreMap = (obj) => new Map(Object.entries(obj || {}));
 
-    try {
-      const data = JSON.parse(saved);
-      const restoreMap = (obj) => new Map(Object.entries(obj || {}));
+        setFormData({
+          patientName: data.patientName || "",
+          patientId: data.patientId || "",
+          doctorName: data.doctorName || "",
+          clinicName: data.clinicName || "",
+          patientAge: data.patientAge || "",
+          patientGender: data.patientGender || "",
+          assessmentDate: data.assessmentDate || new Date().toISOString().split('T')[0],
+          consent: data.consent || false,
+          part1: restoreMap(data.part1),
+          part2: restoreMap(data.part2),
+          part3: restoreMap(data.part3),
+          part4: restoreMap(data.part4),
+        });
 
-      setFormData({
-        patientName: data.patientName || "",
-        patientId: data.patientId || "",
-        doctorName: data.doctorName || "",
-        clinicName: data.clinicName || "",
-        patientAge: data.patientAge || "",
-        patientGender: data.patientGender || "",
-        assessmentDate: data.assessmentDate || new Date().toISOString().split('T')[0],
-        consent: data.consent || false,
-        part1: restoreMap(data.part1),
-        part2: restoreMap(data.part2),
-        part3: restoreMap(data.part3),
-        part4: restoreMap(data.part4),
-      });
-      setCurrentStep(data.currentStep || 0);
-      setShowConsent(!data.consent);
-      setLastSaved(data.lastSaved ? new Date(data.lastSaved).toLocaleTimeString() : null);
-    } catch (err) {
-      console.error("Failed to load saved form:", err);
+        // Restore the exact step user was on (e.g. Summary)
+        setCurrentStep(data.currentStep || 0);
+        setShowConsent(!data.consent);
+        setLastSaved(data.lastSaved ? new Date(data.lastSaved).toLocaleTimeString() : null);
+      } catch (err) {
+        console.error("Failed to load saved form:", err);
+      }
     }
+
+    // Mark restoration complete – now safe to render the form
+    setIsRestored(true);
   }, []);
 
   // Save to localStorage with timestamp
@@ -234,9 +242,10 @@ function AssessmentForm() {
       // Simulate API delay for better UX
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const res = await axios.post("https://parkinsensebackend-jqkosd5t7-dineshs-projects-d4453a53.vercel.app/api/assessments", payload);
+      const res = await axios.post("http://localhost:5000/api/assessments", payload);
       const assessmentId = res.data.data.id;
 
+      // Clear storage ONLY after successful submission
       localStorage.removeItem("updrs-form");
       
       // Show success notification
@@ -278,7 +287,7 @@ function AssessmentForm() {
   };
 
   const completionPercentage = calculateCompletion();
-  const currentStepData = STEPS[currentStep];
+  const currentStepData = STEPS[currentStep] || {};
 
   return (
     <div className="mds-updrs-container">
@@ -323,7 +332,7 @@ function AssessmentForm() {
                     initial={{ width: 0 }}
                     animate={{ width: `${completionPercentage}%` }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    style={{ background: `linear-gradient(90deg, ${currentStepData.color}, ${STEPS[Math.min(currentStep + 1, STEPS.length - 1)].color})` }}
+                    style={{ background: `linear-gradient(90deg, ${currentStepData.color || "#3b82f6"}, #60a5fa)` }}
                   />
                 </div>
               </div>
@@ -422,370 +431,394 @@ function AssessmentForm() {
             </div>
           )}
 
-          {/* Main Content Area */}
+          {/* Main Content Area – Only render after restoration */}
           <div className="content-area">
-            <div className="main-content">
-              <AnimatePresence mode="wait">
-                {showConsent && (
-                  <ConsentModal
-                    onAgree={() => {
-                      setFormData((prev) => ({ ...prev, consent: true }));
-                      setShowConsent(false);
-                    }}
-                  />
+            {isRestored ? (
+              <div className="main-content">
+                <AnimatePresence mode="wait">
+                  {showConsent && (
+                    <ConsentModal
+                      onAgree={() => {
+                        setFormData((prev) => ({ ...prev, consent: true }));
+                        setShowConsent(false);
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* Mobile Current Step Indicator */}
+                {isMobile && !showConsent && (
+                  <div className="mobile-current-step">
+                    <div className="mobile-step-header-info">
+                      <div className="mobile-step-icon-indicator" style={{ background: STEPS[currentStep]?.color || "#3b82f6" }}>
+                        {STEPS[currentStep]?.icon}
+                      </div>
+                      <div>
+                        <h3>{STEPS[currentStep]?.name}</h3>
+                        {STEPS[currentStep]?.description && (
+                          <p>{STEPS[currentStep]?.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mobile-step-progress">
+                      Step {currentStep + 1} of {STEPS.length}
+                    </div>
+                  </div>
                 )}
-              </AnimatePresence>
 
-              {/* Mobile Current Step Indicator */}
-              {isMobile && !showConsent && (
-                <div className="mobile-current-step">
-                  <div className="mobile-step-header-info">
-                    <div className="mobile-step-icon-indicator" style={{ background: currentStepData.color }}>
-                      {currentStepData.icon}
-                    </div>
-                    <div>
-                      <h3>{currentStepData.name}</h3>
-                      {currentStepData.description && (
-                        <p>{currentStepData.description}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mobile-step-progress">
-                    Step {currentStep + 1} of {STEPS.length}
-                  </div>
-                </div>
-              )}
-
-              <AnimatePresence mode="wait">
-                {/* Patient Information */}
-                {currentStep === 0 && !showConsent && (
-                  <motion.div
-                    key="patient-info"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="mds-card form-section"
-                  >
-                    <div className="section-header">
-                      <div className="section-icon">
-                        <FaUserInjured />
+                <AnimatePresence mode="wait">
+                  {/* Patient Information */}
+                  {currentStep === 0 && !showConsent && (
+                    <motion.div
+                      key="patient-info"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="mds-card form-section"
+                    >
+                      <div className="section-header">
+                        <div className="section-icon">
+                          <FaUserInjured />
+                        </div>
+                        <div className="section-title">
+                          <h2>Patient Information</h2>
+                          <p>Enter the patient's demographic and clinical details</p>
+                        </div>
                       </div>
-                      <div className="section-title">
-                        <h2>Patient Information</h2>
-                        <p>Enter the patient's demographic and clinical details</p>
-                      </div>
-                    </div>
 
-                    <div className="mds-content-area form-content">
-                      <div className="mds-form-grid form-grid">
-                        <div className="mds-form-group form-card">
-                          <label className="mds-form-label form-label">
-                            <FaUserInjured className="label-icon" />
-                            Patient Full Name *
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Enter patient's full name"
-                            className="mds-form-input form-input"
-                            value={formData.patientName}
-                            onChange={(e) =>
-                              setFormData((prev) => ({ ...prev, patientName: e.target.value }))
-                            }
-                          />
-                          <div className="form-hint">Required field</div>
-                        </div>
-
-                        <div className="mds-form-group form-card">
-                          <label className="mds-form-label form-label">
-                            <FaIdCard className="label-icon" />
-                            Patient ID *
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="PD-YYYY-XXX"
-                            className="mds-form-input form-input"
-                            value={formData.patientId}
-                            onChange={(e) =>
-                              setFormData((prev) => ({ ...prev, patientId: e.target.value }))
-                            }
-                          />
-                          <div className="form-hint">Format: PD-2024-001</div>
-                        </div>
-
-                        <div className="mds-form-group form-card">
-                          <label className="mds-form-label form-label">
-                            <FaUserMd className="label-icon" />
-                            Physician Name *
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Enter physician's name"
-                            className="mds-form-input form-input"
-                            value={formData.doctorName}
-                            onChange={(e) =>
-                              setFormData((prev) => ({ ...prev, doctorName: e.target.value }))
-                            }
-                          />
-                          <div className="form-hint">Attending physician</div>
-                        </div>
-
-                        <div className="mds-form-group form-card">
-                          <label className="mds-form-label form-label">
-                            <FaHospital className="label-icon" />
-                            Medical Facility
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Enter hospital/clinic name"
-                            className="mds-form-input form-input"
-                            value={formData.clinicName}
-                            onChange={(e) =>
-                              setFormData((prev) => ({ ...prev, clinicName: e.target.value }))
-                            }
-                          />
-                        </div>
-
-                        <div className="mds-form-group form-card">
-                          <label className="mds-form-label form-label">
-                            <span className="label-icon">#</span>
-                            Age
-                          </label>
-                          <div className="input-group">
+                      <div className="mds-content-area form-content">
+                        <div className="mds-form-grid form-grid">
+                          <div className="mds-form-group form-card">
+                            <label className="mds-form-label form-label">
+                              <FaUserInjured className="label-icon" />
+                              Patient Full Name *
+                            </label>
                             <input
-                              type="number"
-                              placeholder="65"
-                              min="0"
-                              max="120"
+                              type="text"
+                              placeholder="Enter patient's full name"
                               className="mds-form-input form-input"
-                              value={formData.patientAge}
+                              value={formData.patientName}
                               onChange={(e) =>
-                                setFormData((prev) => ({ ...prev, patientAge: e.target.value }))
+                                setFormData((prev) => ({ ...prev, patientName: e.target.value }))
                               }
                             />
-                            <span className="input-suffix">years</span>
+                            <div className="form-hint">Required field</div>
                           </div>
-                          <div className="form-hint">Patient's current age</div>
-                        </div>
 
-                        <div className="mds-form-group form-card">
-                          <label className="mds-form-label form-label">
-                            <FaVenusMars className="label-icon" />
-                            Gender
-                          </label>
-                          <div className="gender-selector">
-                            {['male', 'female', 'other', 'prefer-not-to-say'].map(gender => (
-                              <button
-                                key={gender}
-                                className={`gender-option mds-button-secondary ${formData.patientGender === gender ? 'selected' : ''}`}
-                                onClick={() => setFormData(prev => ({ ...prev, patientGender: gender }))}
-                              >
-                                {gender === 'male' ? 'Male' : 
-                                 gender === 'female' ? 'Female' : 
-                                 gender === 'other' ? 'Other' : 'Prefer not to say'}
-                              </button>
-                            ))}
+                          <div className="mds-form-group form-card">
+                            <label className="mds-form-label form-label">
+                              <FaIdCard className="label-icon" />
+                              Patient ID *
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="PD-YYYY-XXX"
+                              className="mds-form-input form-input"
+                              value={formData.patientId}
+                              onChange={(e) =>
+                                setFormData((prev) => ({ ...prev, patientId: e.target.value }))
+                              }
+                            />
+                            <div className="form-hint">Format: PD-2024-001</div>
                           </div>
-                        </div>
-                      </div>
 
-                      {/* Assessment Details Card */}
-                      <div className="mds-location-info assessment-details">
-                        <div className="details-header">
-                          <FaCalendarAlt className="details-icon" />
-                          <h3>Assessment Details</h3>
-                        </div>
-                        <div className="details-grid">
-                          <div className="detail-item">
-                            <span className="detail-label">Assessment Date</span>
-                            <div className="date-input-wrapper">
-                              <FaCalendarAlt className="date-icon" />
+                          <div className="mds-form-group form-card">
+                            <label className="mds-form-label form-label">
+                              <FaUserMd className="label-icon" />
+                              Physician Name *
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Enter physician's name"
+                              className="mds-form-input form-input"
+                              value={formData.doctorName}
+                              onChange={(e) =>
+                                setFormData((prev) => ({ ...prev, doctorName: e.target.value }))
+                              }
+                            />
+                            <div className="form-hint">Attending physician</div>
+                          </div>
+
+                          <div className="mds-form-group form-card">
+                            <label className="mds-form-label form-label">
+                              <FaHospital className="label-icon" />
+                              Medical Facility
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Enter hospital/clinic name"
+                              className="mds-form-input form-input"
+                              value={formData.clinicName}
+                              onChange={(e) =>
+                                setFormData((prev) => ({ ...prev, clinicName: e.target.value }))
+                              }
+                            />
+                          </div>
+
+                          <div className="mds-form-group form-card">
+                            <label className="mds-form-label form-label">
+                              <span className="label-icon">#</span>
+                              Age
+                            </label>
+                            <div className="input-group">
                               <input
-                                type="date"
-                                className="date-input"
-                                value={formData.assessmentDate}
+                                type="number"
+                                placeholder="65"
+                                min="0"
+                                max="120"
+                                className="mds-form-input form-input"
+                                value={formData.patientAge}
                                 onChange={(e) =>
-                                  setFormData((prev) => ({ ...prev, assessmentDate: e.target.value }))
+                                  setFormData((prev) => ({ ...prev, patientAge: e.target.value }))
                                 }
                               />
+                              <span className="input-suffix">years</span>
+                            </div>
+                            <div className="form-hint">Patient's current age</div>
+                          </div>
+
+                          <div className="mds-form-group form-card">
+                            <label className="mds-form-label form-label">
+                              <FaVenusMars className="label-icon" />
+                              Gender
+                            </label>
+                            <div className="gender-selector">
+                              {['male', 'female', 'other', 'prefer-not-to-say'].map(gender => (
+                                <button
+                                  key={gender}
+                                  className={`gender-option mds-button-secondary ${formData.patientGender === gender ? 'selected' : ''}`}
+                                  onClick={() => setFormData(prev => ({ ...prev, patientGender: gender }))}
+                                >
+                                  {gender === 'male' ? 'Male' : 
+                                   gender === 'female' ? 'Female' : 
+                                   gender === 'other' ? 'Other' : 'Prefer not to say'}
+                                </button>
+                              ))}
                             </div>
                           </div>
-                          <div className="detail-item">
-                            <span className="detail-label">Location</span>
-                            <div className={`location-status ${locationError ? 'error' : location.lat ? 'success' : 'loading'}`}>
-                              <FaMapMarkerAlt />
-                              <span>
-                                {locationError 
-                                  ? "Default Location (Colombo)"
-                                  : location.lat 
-                                  ? `GPS: ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
-                                  : "Acquiring location..."}
-                              </span>
-                            </div>
+                        </div>
+
+                        {/* Assessment Details Card */}
+                        <div className="mds-location-info assessment-details">
+                          <div className="details-header">
+                            <FaCalendarAlt className="details-icon" />
+                            <h3>Assessment Details</h3>
                           </div>
-                          <div className="detail-item">
-                            <span className="detail-label">Session Status</span>
-                            <div className="save-status">
-                              <FaHistory />
-                              <span>Auto-save active • Last: {lastSaved || "Never"}</span>
+                          <div className="details-grid">
+                            <div className="detail-item">
+                              <span className="detail-label">Assessment Date</span>
+                              <div className="date-input-wrapper">
+                                <FaCalendarAlt className="date-icon" />
+                                <input
+                                  type="date"
+                                  className="date-input"
+                                  value={formData.assessmentDate}
+                                  onChange={(e) =>
+                                    setFormData((prev) => ({ ...prev, assessmentDate: e.target.value }))
+                                  }
+                                />
+                              </div>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Location</span>
+                              <div className={`location-status ${locationError ? 'error' : location.lat ? 'success' : 'loading'}`}>
+                                <FaMapMarkerAlt />
+                                <span>
+                                  {locationError 
+                                    ? "Default Location (Colombo)"
+                                    : location.lat 
+                                    ? `GPS: ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
+                                    : "Acquiring location..."}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Session Status</span>
+                              <div className="save-status">
+                                <FaHistory />
+                                <span>Auto-save active • Last: {lastSaved || "Never"}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Navigation Buttons */}
-                    <div className="mds-navigation-footer bottom-navigation">
-                      <div className="nav-container">
-                        <div className="nav-buttons-wrapper">
-                          <div className="mds-flex-between nav-buttons">
-                            <div className="button-group left">
-                              {currentStep > 0 && (
+                      {/* Navigation Buttons */}
+                      <div className="mds-navigation-footer bottom-navigation">
+                        <div className="nav-container">
+                          <div className="nav-buttons-wrapper">
+                            <div className="mds-flex-between nav-buttons">
+                              <div className="button-group left">
+                                {currentStep > 0 && (
+                                  <button className="mds-button mds-button-secondary nav-button prev" onClick={prevStep}>
+                                    <FaChevronLeft />
+                                    <span>Back</span>
+                                  </button>
+                                )}
+                              </div>
+                              <div className="button-group right">
+                                <button 
+                                  className="mds-button mds-button-primary nav-button next"
+                                  onClick={nextStep}
+                                  disabled={
+                                    (currentStep === 0 &&
+                                      (!formData.patientName || !formData.patientId || !formData.doctorName))
+                                  }
+                                >
+                                  <span>{currentStep === 0 ? "Begin Assessment" : "Continue"}</span>
+                                  <FaChevronRight />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* MDS-UPDRS Parts */}
+                  {currentStep >= 1 && currentStep <= 4 && !showConsent && (
+                    <motion.div
+                      key={`part-${currentStep}`}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="mds-card form-section"
+                    >
+                      {!isMobile && (
+                        <div className="part-header" style={{ background: `linear-gradient(90deg, ${currentStepData.color}, ${STEPS[Math.min(currentStep + 1, STEPS.length - 1)].color})` }}>
+                          <div className="part-icon">
+                            {currentStepData.icon}
+                          </div>
+                          <div className="part-title">
+                            <h2>{currentStepData.name}</h2>
+                            <p>{currentStepData.description}</p>
+                          </div>
+                          <div className="part-score">
+                            <span className="score-label">Items Completed</span>
+                            <span className="score-value">
+                              {formData[["part1", "part2", "part3", "part4"][currentStep - 1]]?.size || 0}
+                              /{MDS_UPDRS_ITEMS[["part1", "part2", "part3", "part4"][currentStep - 1]]?.length || 0}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mds-content-area form-content">
+                        <PartForm
+                          part={["part1", "part2", "part3", "part4"][currentStep - 1]}
+                          items={MDS_UPDRS_ITEMS[["part1", "part2", "part3", "part4"][currentStep - 1]]}
+                          scores={formData[["part1", "part2", "part3", "part4"][currentStep - 1]]}
+                          onUpdate={updateScore}
+                        />
+                      </div>
+
+                      {/* Navigation Buttons */}
+                      <div className="mds-navigation-footer bottom-navigation">
+                        <div className="nav-container">
+                          <div className="nav-buttons-wrapper">
+                            <div className="mds-flex-between nav-buttons">
+                              <div className="button-group left">
                                 <button className="mds-button mds-button-secondary nav-button prev" onClick={prevStep}>
                                   <FaChevronLeft />
                                   <span>Back</span>
                                 </button>
-                              )}
-                            </div>
-                            <div className="button-group right">
-                              <button 
-                                className="mds-button mds-button-primary nav-button next"
-                                onClick={nextStep}
-                                disabled={
-                                  (currentStep === 0 &&
-                                    (!formData.patientName || !formData.patientId || !formData.doctorName))
-                                }
-                              >
-                                <span>{currentStep === 0 ? "Begin Assessment" : "Continue"}</span>
-                                <FaChevronRight />
-                              </button>
+                              </div>
+                              <div className="button-group right">
+                                <button 
+                                  className="mds-button mds-button-primary nav-button next"
+                                  onClick={nextStep}
+                                >
+                                  <span>Continue</span>
+                                  <FaChevronRight />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
+                    </motion.div>
+                  )}
 
-                {/* MDS-UPDRS Parts */}
-                {currentStep >= 1 && currentStep <= 4 && !showConsent && (
-                  <motion.div
-                    key={`part-${currentStep}`}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="mds-card form-section"
-                  >
-                    {!isMobile && (
-                      <div className="part-header" style={{ background: `linear-gradient(90deg, ${currentStepData.color}, ${STEPS[Math.min(currentStep + 1, STEPS.length - 1)].color})` }}>
-                        <div className="part-icon">
-                          {currentStepData.icon}
-                        </div>
-                        <div className="part-title">
-                          <h2>{currentStepData.name}</h2>
-                          <p>{currentStepData.description}</p>
-                        </div>
-                        <div className="part-score">
-                          <span className="score-label">Items Completed</span>
-                          <span className="score-value">
-                            {formData[["part1", "part2", "part3", "part4"][currentStep - 1]].size}
-                            /{MDS_UPDRS_ITEMS[["part1", "part2", "part3", "part4"][currentStep - 1]]?.length || 0}
-                          </span>
-                        </div>
+                  {/* Summary */}
+                  {currentStep === 5 && !showConsent && (
+                    <motion.div
+                      key="summary"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="mds-card form-section"
+                    >
+                      <div className="mds-content-area form-content">
+                        <Summary
+                          formData={formData}
+                          location={location}
+                          loading={loading}
+                          onPrev={prevStep}
+                        />
                       </div>
-                    )}
 
-                    <div className="mds-content-area form-content">
-                      <PartForm
-                        part={["part1", "part2", "part3", "part4"][currentStep - 1]}
-                        items={MDS_UPDRS_ITEMS[["part1", "part2", "part3", "part4"][currentStep - 1]]}
-                        scores={formData[["part1", "part2", "part3", "part4"][currentStep - 1]]}
-                        onUpdate={updateScore}
-                      />
-                    </div>
-
-                    {/* Navigation Buttons */}
-                    <div className="mds-navigation-footer bottom-navigation">
-                      <div className="nav-container">
-                        <div className="nav-buttons-wrapper">
-                          <div className="mds-flex-between nav-buttons">
-                            <div className="button-group left">
-                              <button className="mds-button mds-button-secondary nav-button prev" onClick={prevStep}>
-                                <FaChevronLeft />
-                                <span>Back</span>
-                              </button>
-                            </div>
-                            <div className="button-group right">
-                              <button 
-                                className="mds-button mds-button-primary nav-button next"
-                                onClick={nextStep}
-                              >
-                                <span>Continue</span>
-                                <FaChevronRight />
-                              </button>
+                      {/* Navigation Buttons */}
+                      <div className="mds-navigation-footer bottom-navigation">
+                        <div className="nav-container">
+                          <div className="nav-buttons-wrapper">
+                            <div className="mds-flex-between nav-buttons">
+                              <div className="button-group left">
+                                <button className="mds-button mds-button-secondary nav-button prev" onClick={prevStep}>
+                                  <FaChevronLeft />
+                                  <span>Back</span>
+                                </button>
+                              </div>
+                              <div className="button-group right">
+                                <button 
+                                  className="mds-button mds-button-success nav-button submit"
+                                  onClick={submitAssessment}
+                                  disabled={loading}
+                                >
+                                  {loading ? (
+                                    <>
+                                      <div className="spinner"></div>
+                                      <span>Processing...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FaPaperPlane />
+                                      <span>Submit Assessment</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Summary */}
-                {currentStep === 5 && !showConsent && (
-                  <motion.div
-                    key="summary"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="mds-card form-section"
-                  >
-                    <div className="mds-content-area form-content">
-                      <Summary
-                        formData={formData}
-                        location={location}
-                        loading={loading}
-                        onPrev={prevStep}
-                      />
-                    </div>
-
-                    {/* Navigation Buttons */}
-                    <div className="mds-navigation-footer bottom-navigation">
-                      <div className="nav-container">
-                        <div className="nav-buttons-wrapper">
-                          <div className="mds-flex-between nav-buttons">
-                            <div className="button-group left">
-                              <button className="mds-button mds-button-secondary nav-button prev" onClick={prevStep}>
-                                <FaChevronLeft />
-                                <span>Back</span>
-                              </button>
-                            </div>
-                            <div className="button-group right">
-                              <button 
-                                className="mds-button mds-button-success nav-button submit"
-                                onClick={submitAssessment}
-                                disabled={loading}
-                              >
-                                {loading ? (
-                                  <>
-                                    <div className="spinner"></div>
-                                    <span>Processing...</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <FaPaperPlane />
-                                    <span>Submit Assessment</span>
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div style={{
+                minHeight: "70vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#64748b",
+                fontSize: "1.2rem"
+              }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{
+                    width: "48px",
+                    height: "48px",
+                    border: "5px solid #e2e8f0",
+                    borderTopColor: "#3b82f6",
+                    borderRadius: "50%",
+                    animation: "spin 1s linear infinite",
+                    margin: "0 auto 1rem"
+                  }}></div>
+                  <p>Restoring your previous assessment...</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
