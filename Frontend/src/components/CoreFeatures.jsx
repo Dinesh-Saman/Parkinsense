@@ -57,11 +57,14 @@ const CoreFeatures = () => {
   }, []);
 
   const handleCardClick = (index) => {
-    if (index === 1) {
+    if (index === 0) {
+      navigate("/voice-analysis");
+    } else if (index === 1) {
       navigate("/spiral-test");
     } else if (index === 2) {
       navigate("/diagnostic");
     }
+    // index === 3 (Personalized Recommendations) remains non-clickable
   };
 
   return (
@@ -176,6 +179,15 @@ const CoreFeatures = () => {
           transform: scaleX(1);
         }
 
+        .service-card.clickable {
+          cursor: pointer;
+        }
+
+        .service-card.clickable:hover {
+          transform: translateY(-12px);
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
+        }
+
         .service-card:hover {
           transform: translateY(-10px);
           box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
@@ -266,11 +278,6 @@ const CoreFeatures = () => {
           transform: scale(1);
         }
 
-        /* Make clickable cards look interactive */
-        .service-card.clickable {
-          cursor: pointer;
-        }
-
         @media (max-width: 1024px) {
           .services-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -321,7 +328,7 @@ const CoreFeatures = () => {
             <div
               key={index}
               className={`service-card ${visibleCards.includes(index) ? 'visible' : ''} ${
-                index === 1 || index === 2 ? 'clickable' : ''
+                index === 0 || index === 1 || index === 2 ? 'clickable' : ''
               }`}
               style={{
                 '--card-color': feature.color,

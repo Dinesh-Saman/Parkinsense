@@ -45,7 +45,7 @@ const RecommendationPage = () => {
     .inner { max-width: 1200px; margin: 0 auto; }
     .back { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; color: #1e40af; font-weight: 600; cursor: pointer; margin-bottom: 1.5rem; }
     .header { text-align: center; margin-bottom: 2rem; }
-    .header h1 { font-size: 2.75rem; font-weight: 800; background: linear-gradient(to right, #1e40af, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header h1 { font-size: 2.75rem; font-weight: 800; color: #7c3aed; }
     .stage { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; border-radius: 9999px; font-weight: 600; }
     .mild { background: #d1fae5; color: #065f46; }
     .moderate { background: #fef3c7; color: #92400e; }

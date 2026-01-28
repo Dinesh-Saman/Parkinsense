@@ -34,13 +34,16 @@ i18n.use(initReactI18next).init({
         
         // NEW: Spiral Test
         spiral_test: "Spiral Test",
-        draw_spiral_instruction: "Draw a spiral slowly with your finger or mouse",
+        draw_spiral_instruction: "Draw a spiral from mouse or touchpad pen or otherwise upload drawn image.",
         clear: "Clear",
         check_result: "Check Result",
         analyzing: "Analyzing with AI...",
         result_healthy: "Spiral looks normal and smooth.",
         result_parkinson: "Spiral shows signs of tremor. Please consult a neurologist.",
-        confidence: "Confidence"
+        confidence: "Confidence",
+
+        // NEW: Voice Analysis (added)
+        voice_analysis: "Voice Analysis"
       }
     },
 
@@ -72,13 +75,16 @@ i18n.use(initReactI18next).init({
 
         // NEW: Spiral Test in Sinhala
         spiral_test: "සර්පිල පරීක්ෂණය",
-        draw_spiral_instruction: "බෙරගලින් හෝ මූසිකයෙන් සෙමින් සර්පිලයක් අඳින්න",
+        draw_spiral_instruction: "මූසිකයෙන් හෝ ටච්පෑඩ් පෑනෙන් සර්පිලයක් අඳින්න නැතහොත් ඇඳූ රූපය උඩුගත කරන්න.",
         clear: "මකන්න",
         check_result: "ප්‍රතිඵල පරීක්ෂා කරන්න",
         analyzing: "AI මගින් විශ්ලේෂණය කරමින්...",
         result_healthy: "සර්පිලය සුමටයි. කිසිදු ගැටලුවක් නොපෙන්වයි.",
         result_parkinson: "සර්පිලයේ කම්පන ලක්ෂණ පෙන්වයි. කරුණාකර ස්නායු රෝග විශේෂඥවරයෙකු හමුවන්න.",
-        confidence: "විශ්වාසනීයත්වය"
+        confidence: "විශ්වාසනීයත්වය",
+
+        // NEW: Voice Analysis in Sinhala (added)
+        voice_analysis: "හඬ විශ්ලේෂණය"
       }
     },
 
@@ -110,13 +116,16 @@ i18n.use(initReactI18next).init({
 
         // NEW: Spiral Test in Tamil
         spiral_test: "சுருள் சோதனை",
-        draw_spiral_instruction: "விரலால் அல்லது மவுஸால் மெதுவாக சுருள் வரையவும்",
+        draw_spiral_instruction: "மவுஸ் அல்லது டச்பேட் பேனால் அல்லது விரலால் சுருள் வரையவும் அல்லது வரைந்த படத்தை பதிவேற்றவும்.",
         clear: "அழி",
         check_result: "முடிவை சரிபார்",
         analyzing: "AI உதவியுடன் ஆய்வு செய்யப்படுகிறது...",
         result_healthy: "சுருள் சீராக உள்ளது. எந்த அறிகுறியும் இல்லை.",
         result_parkinson: "சுருளில் நடுக்கம் தெரிகிறது. தயவு செய்து நரம்பியல் மருத்துவரை சந்திக்கவும்.",
-        confidence: "நம்பிக்கை அளவு"
+        confidence: "நம்பிக்கை அளவு",
+
+        // NEW: Voice Analysis in Tamil (added)
+        voice_analysis: "குரல் பகுப்பாய்வு"
       }
     }
   },

@@ -13,7 +13,13 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',  // ← change from default *
+  credentials: false,
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204
+}));
 app.use(express.json({ limit: '10mb' }));
 
 const limiter = rateLimit({
@@ -32,6 +38,7 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/api/assessments', require('./routes/assessmentRoutes'));
 app.use('/api/recommendations', require('./routes/recommendationRoutes'));
 app.use('/api/spiral', require('./routes/spiralRoutes'));
+app.use('/api/voice', require('./routes/voiceRoutes'));
 
 // Health Check
 app.get('/', (req, res) => {

@@ -4,7 +4,10 @@ import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState('next');
+  const [direction, setDirection] = useState("next");
+  const [itemsPerView, setItemsPerView] = useState(3);
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
 
   const testimonials = [
     {
@@ -12,80 +15,94 @@ const Testimonials = () => {
       role: "Senior Neurologist, National Hospital of Sri Lanka",
       image: "https://randomuser.me/api/portraits/men/32.jpg",
       text: "ParkinSense represents a paradigm shift in early Parkinson's detection. The AI-powered screening tools provide remarkable accuracy while remaining completely non-invasive and accessible to all patients.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Nimali Jayawardena",
       role: "Patient, Kandy",
       image: "https://randomuser.me/api/portraits/women/45.jpg",
       text: "The voice test was incredibly simple to use. Within minutes, I had results that encouraged me to seek professional help. Early detection saved my quality of life.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Dr. Ruwan Fernando",
       role: "AI Researcher, University of Colombo",
       image: "https://randomuser.me/api/portraits/men/40.jpg",
       text: "An exemplary fusion of artificial intelligence and healthcare. ParkinSense showcases the transformative potential of machine learning in neurological screening.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Sanduni Perera",
       role: "Caregiver, Galle",
       image: "https://randomuser.me/api/portraits/women/62.jpg",
       text: "As someone caring for my father with Parkinson's, I wish we had this technology earlier. It empowers families to recognize symptoms before they become severe.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Dr. Chaminda Rajapaksa",
       role: "Neurologist, Teaching Hospital Karapitiya",
       image: "https://randomuser.me/api/portraits/men/55.jpg",
       text: "The spiral drawing analysis is particularly impressive. It captures subtle motor control issues that often go unnoticed in traditional screenings. A game-changer for rural healthcare.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Priyanka Dissanayake",
       role: "Hospital Staff, Anuradhapura Teaching Hospital",
       image: "https://randomuser.me/api/portraits/women/38.jpg",
       text: "ParkinSense has streamlined our screening process dramatically. We can now assess more patients efficiently, and the digital records help with long-term monitoring.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Kasun Wickramasinghe",
       role: "Patient, Jaffna",
       image: "https://randomuser.me/api/portraits/men/48.jpg",
       text: "Living in a remote area, access to specialists was always challenging. ParkinSense gave me the initial screening I needed from home, and now I'm receiving proper treatment.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Dr. Ayesha Fonseka",
       role: "Movement Disorder Specialist, Lanka Hospitals",
       image: "https://randomuser.me/api/portraits/women/50.jpg",
       text: "The multi-modal approach combining voice, drawing, and cognitive tests provides a comprehensive assessment. I recommend ParkinSense to all my at-risk patients.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Sunil Amarasinghe",
       role: "Caregiver & Former Engineer, Negombo",
       image: "https://randomuser.me/api/portraits/men/60.jpg",
       text: "The technology is user-friendly even for seniors. My wife completed all tests independently, and the clear results helped us have an informed discussion with her neurologist.",
-      rating: 5
+      rating: 5,
     },
     {
       name: "Nurse Dilani Kumaratunga",
       role: "Neurology Ward Supervisor, Colombo General Hospital",
       image: "https://randomuser.me/api/portraits/women/42.jpg",
       text: "We've integrated ParkinSense into our preliminary screening protocol. It significantly reduces wait times and helps us prioritize patients who need immediate specialist attention.",
-      rating: 5
-    }
+      rating: 5,
+    },
   ];
 
-  const itemsPerView = window.innerWidth < 768 ? 1 : 3;
+  // Update number of visible items based on screen width
+  useEffect(() => {
+    const updateItemsPerView = () => {
+      if (window.innerWidth < 768) {
+        setItemsPerView(1);
+      } else if (window.innerWidth < 1024) {
+        setItemsPerView(2);
+      } else {
+        setItemsPerView(3);
+      }
+    };
+
+    updateItemsPerView();
+    window.addEventListener("resize", updateItemsPerView);
+    return () => window.removeEventListener("resize", updateItemsPerView);
+  }, []);
+
   const maxIndex = Math.max(0, testimonials.length - itemsPerView);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAnimating(false);
-    }, 500);
+    const timer = setTimeout(() => setIsAnimating(false), 600);
     return () => clearTimeout(timer);
   }, [currentIndex]);
 
@@ -93,41 +110,80 @@ const Testimonials = () => {
   useEffect(() => {
     const autoPlay = setInterval(() => {
       if (currentIndex >= maxIndex) {
-        setDirection('next');
+        setDirection("next");
         setIsAnimating(true);
         setCurrentIndex(0);
       } else {
-        setDirection('next');
+        setDirection("next");
         setIsAnimating(true);
-        setCurrentIndex(prev => prev + 1);
+        setCurrentIndex((prev) => prev + 1);
       }
-    }, 5000); // Change slide every 5 seconds
+    }, 5000);
 
     return () => clearInterval(autoPlay);
   }, [currentIndex, maxIndex]);
 
   const handleNext = () => {
     if (currentIndex < maxIndex && !isAnimating) {
-      setDirection('next');
+      setDirection("next");
       setIsAnimating(true);
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
+    } else if (currentIndex >= maxIndex && !isAnimating) {
+      // Loop back to start
+      setDirection("next");
+      setIsAnimating(true);
+      setCurrentIndex(0);
     }
   };
 
   const handlePrev = () => {
     if (currentIndex > 0 && !isAnimating) {
-      setDirection('prev');
+      setDirection("prev");
       setIsAnimating(true);
-      setCurrentIndex(prev => prev - 1);
+      setCurrentIndex((prev) => prev - 1);
+    } else if (currentIndex === 0 && !isAnimating) {
+      // Loop to end
+      setDirection("prev");
+      setIsAnimating(true);
+      setCurrentIndex(maxIndex);
     }
   };
 
   const handleDotClick = (index) => {
     if (!isAnimating && index !== currentIndex) {
-      setDirection(index > currentIndex ? 'next' : 'prev');
+      setDirection(index > currentIndex ? "next" : "prev");
       setIsAnimating(true);
       setCurrentIndex(index);
     }
+  };
+
+  // Touch handlers for mobile swipe
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    
+    const distance = touchStartX - touchEndX;
+    const minSwipeDistance = 50;
+    
+    if (Math.abs(distance) < minSwipeDistance) return;
+    
+    if (distance > 0) {
+      // Swipe left - next
+      handleNext();
+    } else {
+      // Swipe right - previous
+      handlePrev();
+    }
+    
+    setTouchStartX(0);
+    setTouchEndX(0);
   };
 
   return (
@@ -135,16 +191,14 @@ const Testimonials = () => {
       <style>{`
         .testimonials-section {
           position: relative;
-          min-height: 100vh;
           background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #ddd6fe 50%, #fce7f3 75%, #fff1f2 100%);
-          padding: 80px 20px;
+          padding: 5rem 1.5rem;
           overflow: hidden;
         }
 
         .testimonials-bg-effects {
           position: absolute;
           inset: 0;
-          overflow: hidden;
           pointer-events: none;
         }
 
@@ -152,35 +206,29 @@ const Testimonials = () => {
           position: absolute;
           border-radius: 50%;
           filter: blur(100px);
-          animation: pulse 4s ease-in-out infinite;
+          animation: pulse 12s ease-in-out infinite;
         }
 
         .bg-blob-1 {
-          top: 80px;
-          left: 40px;
-          width: 400px;
-          height: 400px;
-          background: rgba(147, 197, 253, 0.3);
+          top: 10%;
+          left: 5%;
+          width: 35vw;
+          height: 35vw;
+          background: rgba(147, 197, 253, 0.25);
         }
 
         .bg-blob-2 {
-          bottom: 80px;
-          right: 40px;
-          width: 500px;
-          height: 500px;
-          background: rgba(196, 181, 253, 0.3);
-          animation-delay: 1s;
+          bottom: 15%;
+          right: 5%;
+          width: 40vw;
+          height: 40vw;
+          background: rgba(196, 181, 253, 0.25);
+          animation-delay: 3s;
         }
 
         @keyframes pulse {
-          0%, 100% {
-            opacity: 0.5;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.1);
-          }
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.15); }
         }
 
         .testimonials-wrapper {
@@ -192,41 +240,26 @@ const Testimonials = () => {
 
         .testimonials-header {
           text-align: center;
-          margin-bottom: 80px;
-          animation: fadeInUp 0.8s ease-out;
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          margin-bottom: 4rem;
         }
 
         .testimonials-header h2 {
-          font-size: 3.5rem;
-          font-weight: bold;
-          color: #1e293b;
+          font-size: clamp(2.2rem, 6vw, 3.5rem);
+          font-weight: 800;
+          line-height: 1.1;
           margin: 0;
-          line-height: 1.2;
         }
 
         .testimonials-gradient-text {
           background: linear-gradient(to right, #7c3aed, #ec4899);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-top: 10px !important;
         }
 
         .testimonials-subtitle {
-          font-size: 1.25rem;
+          font-size: clamp(1rem, 3vw, 1.25rem);
           color: #475569;
-          margin-top: 20px;
+          margin-top: 1.25rem;
           max-width: 700px;
           margin-left: auto;
           margin-right: auto;
@@ -234,7 +267,9 @@ const Testimonials = () => {
 
         .carousel-container {
           position: relative;
-          padding: 0 60px;
+          padding: 0 3.5rem;
+          width: 100%;
+          overflow: hidden; /* Add overflow hidden to prevent cut-off */
         }
 
         .carousel-nav {
@@ -242,290 +277,364 @@ const Testimonials = () => {
           top: 50%;
           transform: translateY(-50%);
           z-index: 20;
-          background: rgba(255, 255, 255, 0.9);
+          background: rgba(255,255,255,0.9);
           backdrop-filter: blur(10px);
-          border: 1px solid rgba(124, 58, 237, 0.2);
-          padding: 16px;
+          border: 1px solid rgba(124,58,237,0.2);
+          width: 50px;
+          height: 50px;
           border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(124, 58, 237, 0.15);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .carousel-nav:hover:not(.disabled) {
-          background: rgba(255, 255, 255, 1);
-          border-color: rgba(124, 58, 237, 0.4);
-          transform: translateY(-50%) scale(1.1);
-          box-shadow: 0 6px 20px rgba(124, 58, 237, 0.25);
+          background: white;
+          border-color: #7c3aed;
+          transform: translateY(-50%) scale(1.15);
+          box-shadow: 0 8px 25px rgba(124,58,237,0.25);
         }
 
         .carousel-nav.disabled {
-          opacity: 0.3;
+          opacity: 0.4;
           cursor: not-allowed;
         }
 
-        .carousel-nav-prev {
-          left: 0;
-          transform: translate(-16px, -50%);
-        }
-
-        .carousel-nav-next {
-          right: 0;
-          transform: translate(16px, -50%);
-        }
-
-        .nav-icon {
-          width: 24px;
-          height: 24px;
-          color: #7c3aed;
-        }
+        .carousel-nav-prev { left: 0; }
+        .carousel-nav-next { right: 0; }
 
         .carousel-track-container {
-          overflow: hidden;
-          padding: 8px;
+          overflow: visible;
+          padding: 1rem 0;
+          touch-action: pan-y;
+          width: 100%;
+          margin: 0 -0.5rem; /* Negative margin to compensate for slide padding */
         }
 
         .carousel-track {
           display: flex;
-          gap: 24px;
-          transition: transform 0.5s ease-out;
-        }
-
-        .carousel-track.slide-left {
-          animation: slideLeft 0.5s ease-out;
-        }
-
-        .carousel-track.slide-right {
-          animation: slideRight 0.5s ease-out;
-        }
-
-        @keyframes slideLeft {
-          from {
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes slideRight {
-          from {
-            transform: translateX(0);
-          }
+          transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+          width: 100%;
         }
 
         .testimonial-slide {
-          flex: 0 0 calc(33.333% - 16px);
-          min-width: 0;
+          flex: 0 0 100%;
+          min-width: 100%;
+          box-sizing: border-box;
+          padding: 0 0.5rem;
         }
 
         .testimonial-card-enhanced {
-          background: rgba(255, 255, 255, 0.8);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(124, 58, 237, 0.15);
-          border-radius: 20px;
-          padding: 40px;
+          background: rgba(255,255,255,0.85);
+          backdrop-filter: blur(16px);
+          border: 1px solid rgba(124,58,237,0.12);
+          border-radius: 1.5rem;
+          padding: 2rem;
           height: 100%;
-          transition: all 0.3s ease;
+          transition: all 0.4s ease;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+          width: 100%;
+          margin: 0 auto;
         }
 
         .testimonial-card-enhanced:hover {
-          background: rgba(255, 255, 255, 0.95);
-          border-color: rgba(124, 58, 237, 0.3);
-          transform: translateY(-10px);
-          box-shadow: 0 20px 40px rgba(124, 58, 237, 0.15);
+          transform: translateY(-8px);
+          box-shadow: 0 20px 40px rgba(124,58,237,0.15);
+          border-color: rgba(124,58,237,0.3);
         }
 
         .card-gradient-top {
           position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 4px;
-          background: linear-gradient(to right, #7c3aed, #ec4899, #3b82f6);
+          top: 0; left: 0; right: 0;
+          height: 5px;
+          background: linear-gradient(90deg, #7c3aed, #ec4899, #3b82f6);
         }
 
         .quote-icon {
           position: absolute;
-          top: 24px;
-          right: 24px;
+          top: 1.5rem;
+          right: 1.5rem;
           opacity: 0.08;
-          transition: opacity 0.3s ease;
           color: #7c3aed;
-        }
-
-        .testimonial-card-enhanced:hover .quote-icon {
-          opacity: 0.15;
         }
 
         .testimonial-image-wrapper {
           position: relative;
-          margin-bottom: 30px;
+          margin-bottom: 1.5rem;
         }
 
         .testimonial-image-container {
-          width: 96px;
-          height: 96px;
+          width: 90px;
+          height: 90px;
           margin: 0 auto;
           border-radius: 50%;
           overflow: hidden;
-          border: 4px solid rgba(124, 58, 237, 0.2);
+          border: 4px solid rgba(124,58,237,0.15);
           transition: all 0.3s ease;
         }
 
         .testimonial-card-enhanced:hover .testimonial-image-container {
-          border-color: rgba(124, 58, 237, 0.5);
-          transform: scale(1.05);
+          border-color: #7c3aed80;
+          transform: scale(1.08);
         }
 
         .testimonial-image-enhanced {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform 0.3s ease;
-        }
-
-        .testimonial-card-enhanced:hover .testimonial-image-enhanced {
-          transform: scale(1.1);
         }
 
         .testimonial-rating {
           position: absolute;
-          bottom: -10px;
+          bottom: -12px;
           left: 50%;
           transform: translateX(-50%);
           background: #7c3aed;
-          padding: 4px 12px;
-          border-radius: 20px;
+          color: white;
+          padding: 0.35rem 0.9rem;
+          border-radius: 999px;
+          font-size: 0.9rem;
           display: flex;
-          gap: 2px;
-          box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+          gap: 3px;
+          box-shadow: 0 4px 12px rgba(124,58,237,0.3);
         }
 
         .star {
           color: #fcd34d;
-          font-size: 0.75rem;
         }
 
         .testimonial-content {
           text-align: center;
           position: relative;
-          z-index: 10;
+          z-index: 2;
         }
 
         .testimonial-text-enhanced {
-          color: #475569;
+          color: #4b5563;
           font-size: 1rem;
-          line-height: 1.6;
-          margin-bottom: 24px;
+          line-height: 1.7;
+          margin-bottom: 1.5rem;
           font-style: italic;
         }
 
         .testimonial-name {
+          font-size: 1.2rem;
+          font-weight: 700;
           color: #1e293b;
-          font-size: 1.25rem;
-          font-weight: bold;
-          margin-bottom: 8px;
+          margin-bottom: 0.4rem;
         }
 
         .testimonial-role-enhanced {
           color: #7c3aed;
-          font-size: 0.875rem;
-          font-weight: 500;
+          font-size: 0.9rem;
         }
 
         .carousel-dots {
           display: flex;
           justify-content: center;
-          gap: 8px;
-          margin-top: 60px;
+          gap: 10px;
+          margin-top: 3rem;
+          flex-wrap: wrap;
         }
 
         .dot {
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          background: rgba(124, 58, 237, 0.3);
+          background: rgba(124,58,237,0.3);
           border: none;
           cursor: pointer;
           transition: all 0.3s ease;
-          padding: 0;
         }
 
         .dot:hover {
-          background: rgba(124, 58, 237, 0.5);
+          background: rgba(124,58,237,0.6);
         }
 
         .dot-active {
-          width: 48px;
-          border-radius: 6px;
+          width: 40px;
           background: linear-gradient(to right, #7c3aed, #ec4899);
+          border-radius: 999px;
         }
 
-        .testimonials-stats {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 40px;
-          margin-top: 80px;
-          max-width: 900px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-
-        .stat-item {
-          text-align: center;
-        }
-
-        .stat-number {
-          font-size: 3rem;
-          font-weight: bold;
-          color: #1e293b;
-          margin-bottom: 8px;
-        }
-
-        .stat-label {
-          color: #64748b;
-          font-size: 1rem;
-        }
-
-        @media (max-width: 1024px) {
+        /* Desktop specific styles - FIXED */
+        @media (min-width: 1024px) {
           .testimonial-slide {
-            flex: 0 0 calc(50% - 12px);
+            flex: 0 0 calc(100% / 3);
+            min-width: calc(100% / 3);
           }
           
-          .testimonials-header h2 {
-            font-size: 2.5rem;
+          .carousel-track {
+            gap: 1.5rem;
+          }
+          
+          .carousel-dots {
+            display: none; /* Hide dots on desktop */
+          }
+          
+          /* Adjust container for proper spacing */
+          .carousel-track-container {
+            margin: 0 -0.75rem;
+          }
+          
+          .testimonial-slide {
+            padding: 0 0.75rem;
           }
         }
 
-        @media (max-width: 768px) {
-          .testimonials-section {
-            padding: 60px 15px;
-          }
-
+        /* Tablet styles - FIXED */
+        @media (min-width: 768px) and (max-width: 1023px) {
           .testimonial-slide {
-            flex: 0 0 100%;
+            flex: 0 0 50%;
+            min-width: 50%;
           }
           
-          .carousel-container {
-            padding: 0 50px;
+          .carousel-track {
+            gap: 1.5rem;
           }
           
-          .testimonials-header h2 {
-            font-size: 2rem;
+          /* Adjust container for proper spacing */
+          .carousel-track-container {
+            margin: 0 -0.75rem;
           }
           
-          .testimonials-subtitle {
-            font-size: 1rem;
+          .testimonial-slide {
+            padding: 0 0.75rem;
+          }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 767px) {
+          .testimonials-section { 
+            padding: 3rem 0.5rem;
           }
           
-          .testimonials-stats {
-            grid-template-columns: 1fr;
-            gap: 30px;
+          .carousel-container { 
+            padding: 0 1.5rem;
           }
           
-          .stat-number {
-            font-size: 2.5rem;
+          .carousel-nav {
+            width: 44px;
+            height: 44px;
+          }
+          
+          .carousel-track {
+            gap: 0;
+          }
+          
+          .testimonial-card-enhanced {
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+          }
+          
+          .testimonial-image-container { 
+            width: 80px; 
+            height: 80px; 
+          }
+          
+          .testimonial-text-enhanced { 
+            font-size: 0.95rem; 
+            line-height: 1.6;
+          }
+          
+          .testimonial-name { 
+            font-size: 1.15rem; 
+          }
+          
+          .carousel-dots { 
+            gap: 6px; 
+            margin-top: 2rem; 
+          }
+          
+          .dot { 
+            width: 8px; 
+            height: 8px; 
+          }
+          
+          .dot-active { 
+            width: 24px; 
+          }
+          
+          /* Adjust for mobile */
+          .carousel-track-container {
+            margin: 0 -0.5rem;
+          }
+          
+          .testimonial-slide {
+            padding: 0 0.5rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .testimonials-header h2 { 
+            font-size: 1.8rem; 
+          }
+          
+          .testimonials-subtitle { 
+            font-size: 0.95rem; 
+            padding: 0 0.5rem;
+          }
+          
+          .carousel-nav { 
+            width: 40px; 
+            height: 40px; 
+          }
+          
+          .carousel-container { 
+            padding: 0 1rem; 
+          }
+          
+          .testimonial-card-enhanced {
+            padding: 1.25rem;
+          }
+          
+          .testimonial-text-enhanced { 
+            font-size: 0.9rem; 
+          }
+          
+          .testimonial-name { 
+            font-size: 1.1rem; 
+          }
+          
+          .testimonial-role-enhanced { 
+            font-size: 0.85rem; 
+          }
+          
+          .dot { 
+            width: 6px; 
+            height: 6px; 
+          }
+          
+          .dot-active { 
+            width: 20px; 
+          }
+        }
+
+        @media (max-width: 360px) {
+          .carousel-container { 
+            padding: 0 0.75rem; 
+          }
+          
+          .carousel-nav { 
+            width: 36px; 
+            height: 36px; 
+          }
+          
+          .testimonial-card-enhanced {
+            padding: 1rem;
+          }
+          
+          .carousel-track-container {
+            margin: 0 -0.25rem;
+          }
+          
+          .testimonial-slide {
+            padding: 0 0.25rem;
           }
         }
       `}</style>
@@ -548,42 +657,47 @@ const Testimonials = () => {
           <div className="carousel-container">
             <button
               onClick={handlePrev}
-              disabled={currentIndex === 0}
-              className={`carousel-nav carousel-nav-prev ${currentIndex === 0 ? 'disabled' : ''}`}
+              className={`carousel-nav carousel-nav-prev`}
+              aria-label="Previous testimonial"
             >
-              <ChevronLeft className="nav-icon" />
+              <ChevronLeft size={24} />
             </button>
 
             <button
               onClick={handleNext}
-              disabled={currentIndex >= maxIndex}
-              className={`carousel-nav carousel-nav-next ${currentIndex >= maxIndex ? 'disabled' : ''}`}
+              className={`carousel-nav carousel-nav-next`}
+              aria-label="Next testimonial"
             >
-              <ChevronRight className="nav-icon" />
+              <ChevronRight size={24} />
             </button>
 
-            <div className="carousel-track-container">
+            <div 
+              className="carousel-track-container"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <div
-                className={`carousel-track ${isAnimating ? (direction === 'next' ? 'slide-left' : 'slide-right') : ''}`}
+                className="carousel-track"
                 style={{
-                  transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`
+                  transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+                  transition: isAnimating
+                    ? "transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)"
+                    : "none",
                 }}
               >
                 {testimonials.map((item, index) => (
                   <div key={index} className="testimonial-slide">
                     <div className="testimonial-card-enhanced">
                       <div className="card-gradient-top"></div>
-                      
-                      <div className="quote-icon">
-                        <Quote size={64} />
-                      </div>
-
+                      <Quote className="quote-icon" size={64} />
                       <div className="testimonial-image-wrapper">
                         <div className="testimonial-image-container">
                           <img
                             src={item.image}
                             alt={item.name}
                             className="testimonial-image-enhanced"
+                            loading="lazy"
                           />
                         </div>
                         <div className="testimonial-rating">
@@ -592,7 +706,6 @@ const Testimonials = () => {
                           ))}
                         </div>
                       </div>
-
                       <div className="testimonial-content">
                         <p className="testimonial-text-enhanced">"{item.text}"</p>
                         <h3 className="testimonial-name">{item.name}</h3>
@@ -604,17 +717,18 @@ const Testimonials = () => {
               </div>
             </div>
 
+            {/* Only show dots on mobile */}
             <div className="carousel-dots">
-              {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+              {Array.from({ length: Math.ceil(testimonials.length / itemsPerView) }).map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => handleDotClick(index)}
-                  className={`dot ${index === currentIndex ? 'dot-active' : ''}`}
+                  onClick={() => handleDotClick(index * itemsPerView)}
+                  className={`dot ${Math.floor(currentIndex / itemsPerView) === index ? "dot-active" : ""}`}
+                  aria-label={`Go to testimonial group ${index + 1}`}
                 />
               ))}
             </div>
           </div>
-
         </div>
       </section>
     </>

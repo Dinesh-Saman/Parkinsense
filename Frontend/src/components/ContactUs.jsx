@@ -34,7 +34,7 @@ const ContactUs = () => {
     {
       icon: <Phone size={24} />,
       title: "Phone",
-      details: "+94 XX XXX XXXX"
+      details: "+94 77 478 5555"
     },
     {
       icon: <Mail size={24} />,

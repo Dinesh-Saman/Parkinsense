@@ -5,6 +5,8 @@ import AssessmentForm from "./components/MDS-UPDRS/AssessmentForm";
 import RecommendationPage from "./components/Recommendation/RecommendationPage";
 import Home from "./pages/Home";
 import SpiralTestPage from "./pages/SpiralTestPage";   // ← NEW: Spiral Test Page
+import VoiceTestPage from "./pages/VoiceTestPage";
+import ContactUs from "./pages/Contact";
 
 function App() {
   return (
@@ -18,6 +20,9 @@ function App() {
           
           {/* ← NEW ROUTE: Spiral Drawing Test */}
           <Route path="/spiral-test" element={<SpiralTestPage />} />
+          <Route path="/voice-analysis" element={<VoiceTestPage />} />
+
+          <Route path="/contact-us" element={<ContactUs />} />
         </Routes>
       </div>
     </Router>

@@ -130,7 +130,7 @@ const Summary = ({ formData, location, onSubmit, loading, onPrev }) => {
 
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const res = await axios.post("http://localhost:5000/api/assessments", payload);
+      const res = await axios.post("https://parkinsensebackend-jqkosd5t7-dineshs-projects-d4453a53.vercel.app/api/assessments", payload);
       const assessmentId = res.data.data.id;
 
       localStorage.removeItem("updrs-form");
@@ -1082,32 +1082,6 @@ const Summary = ({ formData, location, onSubmit, loading, onPrev }) => {
             <button onClick={handleShareWhatsApp} className="action-button share whatsapp">
               <FaWhatsapp />
               <span>Share via WhatsApp</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="bottom-row">
-          <div className="bottom-row-buttons">
-            <button onClick={onPrev} className="action-button back">
-              <FaChevronLeft />
-              <span>Back to Assessment</span>
-            </button>
-            <button 
-              onClick={handleSubmit} 
-              disabled={isSubmitting || loading}
-              className="action-button submit"
-            >
-              {isSubmitting || loading ? (
-                <>
-                  <div className="spinner"></div>
-                  <span>Processing...</span>
-                </>
-              ) : (
-                <>
-                  <FaPaperPlane />
-                  <span>Submit & View Recommendations</span>
-                </>
-              )}
             </button>
           </div>
         </div>
