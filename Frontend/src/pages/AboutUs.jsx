@@ -11,42 +11,53 @@ import {
   Zap,
   ChevronRight,
   Star,
-  CheckCircle
+  CheckCircle,
+  Code,
+  Cpu,
+  Stethoscope,
+  Smartphone,
+  Github,
+  Linkedin,
+  Mail
 } from "lucide-react";
 
 const AboutPage = () => {
   const [activeTab, setActiveTab] = useState("mission");
 
-  const teamMembers = [
-    {
-      name: "Dr. Isuru Weerasinghe",
-      role: "Lead Neurologist",
-      image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop",
-      bio: "Senior Neurologist with 15+ years specializing in movement disorders.",
-      expertise: ["Movement Disorders", "Clinical Research", "Patient Care"]
-    },
-    {
-      name: "Prof. Nimal Perera",
-      role: "AI Research Director",
-      image: "https://media.istockphoto.com/id/1180366763/photo/confident-and-smiling-businessman.jpg?s=612x612&w=0&k=20&c=vyWJr4-EJvvVfVZqfC5ZK49YPoGQIv4GpaOdZL_gUbg=",
-      bio: "PhD in Machine Learning, pioneer in medical AI applications.",
-      expertise: ["Deep Learning", "Biomarker Analysis", "Healthcare AI"]
-    },
-    {
-      name: "Dr. Fathima Nazrin",
-      role: "Clinical Psychologist",
-      image: "https://plus.unsplash.com/premium_photo-1664475543697-229156438e1e?q=80&w=386&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      bio: "Specialist in cognitive assessment and neuropsychological testing.",
-      expertise: ["Cognitive Assessment", "Patient Counseling", "Research"]
-    },
-    {
-      name: "Ruvini Jayawardena",
-      role: "Software Architect",
-      image: "https://t4.ftcdn.net/jpg/05/70/57/47/360_F_570574724_HWfki1q3XZt9WzVlCcQujOV5Jxe8UBG1.jpg",
-      bio: "Full-stack developer with focus on secure healthcare platforms.",
-      expertise: ["System Architecture", "Security", "UI/UX"]
-    }
-  ];
+  // Developer profile section
+  const developerProfile = {
+    name: "L.D. Pahan Tharaka",
+    role: "Lead Developer & Creator",
+    image: "https://i.imgur.com/Hjc1nFt.jpeg",
+    bio: "Dedicated software developer passionate about healthcare technology and bridging the gap between medicine and digital innovation.",
+    description: "As the sole developer behind ParkinSense, I've poured my expertise into creating a platform that revolutionizes Parkinson's disease detection. My journey began with a simple yet powerful vision: to make neurological healthcare accessible to everyone, especially those in rural and underserved communities who lack access to specialized medical facilities.",
+    contributions: [
+      {
+        icon: <Code size={20} />,
+        text: "Full-stack development of the entire ParkinSense platform"
+      },
+      {
+        icon: <Cpu size={20} />,
+        text: "Integration of AI algorithms for accurate symptom analysis"
+      },
+      {
+        icon: <Stethoscope size={20} />,
+        text: "Collaboration with medical professionals for clinical validation"
+      },
+      {
+        icon: <Smartphone size={20} />,
+        text: "Mobile-responsive design for accessibility across all devices"
+      }
+    ],
+    missionStatement: "This project represents more than just code—it's a commitment to improving lives through technology. Every line I've written aims to provide non-invasive, early detection that can make a real difference in patient outcomes.",
+    socialLinks: [
+      { icon: <Github size={20} />, url: "#", label: "GitHub" },
+      { icon: <Linkedin size={20} />, url: "https://www.linkedin.com/in/pahan-tharaka-83711b268/", label: "LinkedIn" },
+      { icon: <Mail size={20} />, url: "#", label: "Email" }
+    ]
+  };
+
+  // ... rest of your existing code for milestones, values, stats ...
 
   const milestones = [
     { year: "2023", title: "Research & Development", description: "Initial research and prototype development" },
@@ -103,9 +114,9 @@ const AboutPage = () => {
   ];
 
   // Handle image error
-  const handleImageError = (e, member) => {
+  const handleImageError = (e) => {
     e.target.style.display = 'none';
-    const fallbackDiv = e.target.parentNode.querySelector('.team-image-fallback');
+    const fallbackDiv = e.target.parentNode.querySelector('.developer-image-fallback');
     if (fallbackDiv) {
       fallbackDiv.style.display = 'flex';
     }
@@ -269,6 +280,169 @@ const AboutPage = () => {
           margin-bottom: 2rem;
         }
 
+        /* Developer Profile Section - MODIFIED LAYOUT */
+        .developer-section {
+          padding: 5rem 2rem;
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .developer-header-row {
+          max-width: 1200px;
+          margin: 0 auto 3rem auto;
+          display: flex;
+          align-items: center;
+          gap: 3rem;
+        }
+
+        .developer-image-container {
+          position: relative;
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+          width: 250px;
+          height: 300px;
+          flex-shrink: 0;
+        }
+
+        .developer-image-container:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .developer-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+        }
+
+        .developer-image-fallback {
+          display: none;
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 600;
+          font-size: 3rem;
+        }
+
+        .developer-header-content {
+          flex: 1;
+        }
+
+        .developer-role {
+          display: inline-block;
+          background: linear-gradient(135deg, #06b6d4, #443f50);
+          color: white;
+          padding: 0.5rem 1.5rem;
+          border-radius: 50px;
+          font-weight: 600;
+          font-size: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .developer-name {
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #1e293b;
+          margin-bottom: 1rem;
+          line-height: 1.2;
+        }
+
+        .developer-tagline {
+          color: #06b6d4;
+          font-size: 1.2rem;
+          font-weight: 600;
+          margin-bottom: 1.5rem;
+          font-style: italic;
+        }
+
+        .developer-bio {
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: #475569;
+          margin-bottom: 1.5rem;
+        }
+
+        .developer-social-links {
+          display: flex;
+          gap: 1rem;
+          margin-top: 1.5rem;
+        }
+
+        .social-link {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background: rgba(6, 182, 212, 0.1);
+          color: #06b6d4;
+          border-radius: 10px;
+          text-decoration: none;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+          background: rgba(6, 182, 212, 0.2);
+          transform: translateY(-2px);
+        }
+
+        .developer-content {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .developer-description {
+          font-size: 1.1rem;
+          line-height: 1.8;
+          color: #475569;
+          margin-bottom: 2rem;
+        }
+
+        .contributions-list {
+          margin: 2rem 0;
+        }
+
+        .contribution-item {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 1rem;
+          padding: 1rem;
+          background: rgba(6, 182, 212, 0.05);
+          border-radius: 10px;
+          border-left: 4px solid #06b6d4;
+        }
+
+        .contribution-icon {
+          color: #06b6d4;
+        }
+
+        .contribution-text {
+          color: #475569;
+          font-weight: 500;
+        }
+
+        .mission-highlight {
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+          padding: 2rem;
+          border-radius: 15px;
+          border-left: 5px solid #8b5cf6;
+          margin-top: 2rem;
+        }
+
+        .mission-highlight p {
+          font-size: 1.1rem;
+          line-height: 1.8;
+          color: #475569;
+          font-style: italic;
+          margin: 0;
+        }
+
         /* Values Section */
         .values-section {
           padding: 5rem 2rem;
@@ -322,116 +496,10 @@ const AboutPage = () => {
           line-height: 1.7;
         }
 
-        /* Team Section - Top-cropped images */
-        .team-section {
-          padding: 5rem 2rem;
-          background: white;
-        }
-
-        .team-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 2rem;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .team-card {
-          background: white;
-          border-radius: 20px;
-          overflow: hidden;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-          transition: all 0.3s ease;
-          border: 1px solid #e2e8f0;
-        }
-
-        .team-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-        }
-
-        .team-image-container {
-          position: relative;
-          width: 100%;
-          height: 220px;          /* Slightly smaller to emphasize top part */
-          overflow: hidden;
-        }
-
-        .team-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          object-position: top;   /* <--- CROPS FROM TOP to show face/head */
-        }
-
-        .team-image-overlay {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 60px;
-          background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
-          pointer-events: none;
-        }
-
-        .team-image-fallback {
-          display: none;
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-          align-items: center;
-          justify-content: center;
-          color: #64748b;
-          font-weight: 600;
-          font-size: 3rem;
-        }
-
-        .team-content {
-          padding: 1.5rem;
-          text-align: center;
-        }
-
-        .team-content h3 {
-          font-size: 1.3rem;
-          font-weight: 700;
-          margin-bottom: 0.5rem;
-          color: #1e293b;
-        }
-
-        .team-role {
-          color: #06b6d4;
-          font-weight: 600;
-          margin-bottom: 1rem;
-          font-size: 0.95rem;
-        }
-
-        .team-bio {
-          color: #64748b;
-          font-size: 0.9rem;
-          line-height: 1.6;
-          margin-bottom: 1rem;
-        }
-
-        .team-expertise {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-          justify-content: center;
-        }
-
-        .expertise-tag {
-          background: rgba(6, 182, 212, 0.1);
-          color: #06b6d4;
-          padding: 0.25rem 0.75rem;
-          border-radius: 20px;
-          font-size: 0.8rem;
-          font-weight: 600;
-        }
-
         /* Milestones */
         .milestones-section {
           padding: 5rem 2rem;
-          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          background: white;
         }
 
         .timeline {
@@ -550,8 +618,7 @@ const AboutPage = () => {
         /* Responsive Design */
         @media (max-width: 1024px) {
           .stats-grid,
-          .values-grid,
-          .team-grid {
+          .values-grid {
             grid-template-columns: repeat(2, 1fr);
           }
 
@@ -570,8 +637,7 @@ const AboutPage = () => {
           }
 
           .stats-grid,
-          .values-grid,
-          .team-grid {
+          .values-grid {
             grid-template-columns: 1fr;
           }
 
@@ -583,6 +649,21 @@ const AboutPage = () => {
           .mission-tab {
             width: 100%;
             max-width: 300px;
+          }
+
+          .developer-header-row {
+            flex-direction: column;
+            text-align: center;
+            gap: 2rem;
+          }
+
+          .developer-image-container {
+            width: 180px;
+            height: 180px;
+          }
+
+          .developer-name {
+            font-size: 2rem;
           }
 
           .timeline::before {
@@ -609,9 +690,22 @@ const AboutPage = () => {
           }
 
           .stat-card,
-          .value-card,
-          .team-card {
+          .value-card {
             padding: 1.5rem;
+          }
+
+          .developer-image-container {
+            width: 150px;
+            height: 150px;
+          }
+
+          .developer-name {
+            font-size: 1.8rem;
+          }
+
+          .developer-social-links {
+            justify-content: center;
+            flex-wrap: wrap;
           }
         }
 
@@ -739,7 +833,85 @@ const AboutPage = () => {
           </div>
         </section>
 
-        {/* Values Section */}
+        {/* Developer Profile Section - MOVED BEFORE VALUES */}
+        <section className="developer-section">
+          <div className="fade-in-up">
+            {/* Header row with image and name side by side */}
+            <div className="developer-header-row">
+              <div className="developer-image-container">
+                <img 
+                  src='https://i.imgur.com/Hjc1nFt.jpeg'
+                  alt={developerProfile.name}
+                  className="developer-image"
+                  onError={handleImageError}
+                />
+                <div className="developer-image-fallback">
+                  {developerProfile.name.split(' ').map(n => n[0]).join('')}
+                </div>
+              </div>
+              
+              <div className="developer-header-content">
+                <div className="developer-role">{developerProfile.role}</div>
+                <h2 className="developer-name">{developerProfile.name}</h2>
+                <div className="developer-tagline">
+                  "Bridging Technology and Healthcare for Better Patient Outcomes"
+                </div>
+                <p className="developer-bio">{developerProfile.bio}</p>
+                
+                <div className="developer-social-links">
+                  {developerProfile.socialLinks.map((link, index) => (
+                    <a 
+                      key={index} 
+                      href={link.url} 
+                      className="social-link"
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      {link.icon}
+                      <span>{link.label}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Main content below */}
+            <div className="developer-content">
+              <p className="developer-description">
+                {developerProfile.description} I combined voice analysis algorithms, 
+                motor symptom tracking, and comprehensive clinical questionnaires into 
+                a single, user-friendly platform. This holistic approach ensures that 
+                even individuals in the most remote areas can access reliable Parkinson's 
+                screening without the need for expensive equipment or specialist visits.
+              </p>
+              
+              <div className="contributions-list">
+                <h3 style={{color: '#1e293b', marginBottom: '1.5rem', fontSize: '1.3rem'}}>
+                  Key Contributions:
+                </h3>
+                {developerProfile.contributions.map((contribution, index) => (
+                  <div key={index} className="contribution-item">
+                    <div className="contribution-icon">{contribution.icon}</div>
+                    <div className="contribution-text">{contribution.text}</div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mission-highlight">
+                <p>
+                  <strong>My Vision:</strong> {developerProfile.missionStatement} 
+                  By making this technology non-invasive, affordable, and accessible 
+                  across rural areas, I aim to empower patients with early knowledge 
+                  about their health, enabling timely interventions and improving 
+                  quality of life. This platform represents hope—a tool that combines 
+                  compassionate care with technological innovation to serve humanity.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Values Section - MOVED AFTER DEVELOPER SECTION */}
         <section className="values-section">
           <h2 style={{textAlign: 'center', fontSize: '2.5rem', marginBottom: '3rem', color: '#1e293b'}}>
             Our Core Values
@@ -760,41 +932,6 @@ const AboutPage = () => {
                 </div>
                 <h3>{value.title}</h3>
                 <p>{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Team Section - Now showing top part of images */}
-        <section className="team-section">
-          <h2 style={{textAlign: 'center', fontSize: '2.5rem', marginBottom: '3rem', color: '#1e293b'}}>
-            Meet Our Team
-          </h2>
-          <div className="team-grid">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="team-card fade-in-up" style={{animationDelay: `${index * 0.1}s`}}>
-                <div className="team-image-container">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="team-image"
-                    onError={(e) => handleImageError(e, member)}
-                  />
-                  <div className="team-image-overlay"></div>
-                  <div className="team-image-fallback">
-                    {member.name.split(' ')[1]?.charAt(0) || member.name.charAt(0)}
-                  </div>
-                </div>
-                <div className="team-content">
-                  <h3>{member.name}</h3>
-                  <div className="team-role">{member.role}</div>
-                  <p className="team-bio">{member.bio}</p>
-                  <div className="team-expertise">
-                    {member.expertise.map((exp, i) => (
-                      <span key={i} className="expertise-tag">{exp}</span>
-                    ))}
-                  </div>
-                </div>
               </div>
             ))}
           </div>

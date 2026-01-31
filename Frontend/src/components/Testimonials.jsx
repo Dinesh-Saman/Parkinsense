@@ -11,73 +11,38 @@ const Testimonials = () => {
 
   const testimonials = [
     {
-      name: "Dr. Nimal Senanayake",
-      role: "Senior Neurologist, National Hospital of Sri Lanka",
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
-      text: "ParkinSense represents a paradigm shift in early Parkinson's detection. The AI-powered screening tools provide remarkable accuracy while remaining completely non-invasive and accessible to all patients.",
+      name: "Dr. Kumarangie K. Vithanage",
+      role: "Neuro Physician at Lanka Hospitals of Sri Lanka, MBBS, MD, MRCP(UK)",
+      image: "https://i.imgur.com/JZN4tYQ.jpeg",
+      text: "ParkinSense marks a paradigm shift in early Parkinson's detection, delivering highly accurate AI-powered screening that is fully non-invasive and accessible to all patients.",
       rating: 5,
     },
     {
-      name: "Nimali Jayawardena",
-      role: "Patient, Kandy",
-      image: "https://randomuser.me/api/portraits/women/45.jpg",
+      name: "Dr. Shania Gunasekera",
+      role: "Consultant Neurologist (Act.) MBBS(Colombo),MD,MRCP (UK)",
+      image: "https://imgur.com/LvVNecr.jpeg",
       text: "The voice test was incredibly simple to use. Within minutes, I had results that encouraged me to seek professional help. Early detection saved my quality of life.",
       rating: 5,
     },
     {
-      name: "Dr. Ruwan Fernando",
-      role: "AI Researcher, University of Colombo",
-      image: "https://randomuser.me/api/portraits/men/40.jpg",
+      name: "Prof. Jithangi Wanigasinghe",
+      role: "Professor in Paediatric Neurology in the Department of Paediatrics, Faculty of Medicine, University of Colombo.",
+      image: "https://i.imgur.com/DAjUjiT.jpeg",
       text: "An exemplary fusion of artificial intelligence and healthcare. ParkinSense showcases the transformative potential of machine learning in neurological screening.",
       rating: 5,
     },
     {
-      name: "Sanduni Perera",
-      role: "Caregiver, Galle",
-      image: "https://randomuser.me/api/portraits/women/62.jpg",
+      name: "Dr Priyanka Rupasinghe ",
+      role: "Consultant Paediatric Neurologist , Teaching Hospital-Kurunegala.",
+      image: "https://i.imgur.com/5wcbhq5.jpeg",
       text: "As someone caring for my father with Parkinson's, I wish we had this technology earlier. It empowers families to recognize symptoms before they become severe.",
       rating: 5,
     },
     {
-      name: "Dr. Chaminda Rajapaksa",
-      role: "Neurologist, Teaching Hospital Karapitiya",
-      image: "https://randomuser.me/api/portraits/men/55.jpg",
-      text: "The spiral drawing analysis is particularly impressive. It captures subtle motor control issues that often go unnoticed in traditional screenings. A game-changer for rural healthcare.",
-      rating: 5,
-    },
-    {
-      name: "Priyanka Dissanayake",
-      role: "Hospital Staff, Anuradhapura Teaching Hospital",
-      image: "https://randomuser.me/api/portraits/women/38.jpg",
-      text: "ParkinSense has streamlined our screening process dramatically. We can now assess more patients efficiently, and the digital records help with long-term monitoring.",
-      rating: 5,
-    },
-    {
-      name: "Kasun Wickramasinghe",
-      role: "Patient, Jaffna",
-      image: "https://randomuser.me/api/portraits/men/48.jpg",
-      text: "Living in a remote area, access to specialists was always challenging. ParkinSense gave me the initial screening I needed from home, and now I'm receiving proper treatment.",
-      rating: 5,
-    },
-    {
-      name: "Dr. Ayesha Fonseka",
-      role: "Movement Disorder Specialist, Lanka Hospitals",
-      image: "https://randomuser.me/api/portraits/women/50.jpg",
-      text: "The multi-modal approach combining voice, drawing, and cognitive tests provides a comprehensive assessment. I recommend ParkinSense to all my at-risk patients.",
-      rating: 5,
-    },
-    {
-      name: "Sunil Amarasinghe",
-      role: "Caregiver & Former Engineer, Negombo",
-      image: "https://randomuser.me/api/portraits/men/60.jpg",
-      text: "The technology is user-friendly even for seniors. My wife completed all tests independently, and the clear results helped us have an informed discussion with her neurologist.",
-      rating: 5,
-    },
-    {
-      name: "Nurse Dilani Kumaratunga",
-      role: "Neurology Ward Supervisor, Colombo General Hospital",
-      image: "https://randomuser.me/api/portraits/women/42.jpg",
-      text: "We've integrated ParkinSense into our preliminary screening protocol. It significantly reduces wait times and helps us prioritize patients who need immediate specialist attention.",
+      name: "Dr. Manjula Caldera",
+      role: "Consultant Neurologist at Teaching Hospital Anuradhapura",
+      image: "https://i.imgur.com/uQ7W9Zm.jpeg",
+      text: "The spiral drawing analysis is particularly impressive. It captures subtle motor control issues that often go unnoticed in traditional screenings.",
       rating: 5,
     },
   ];
@@ -269,7 +234,7 @@ const Testimonials = () => {
           position: relative;
           padding: 0 3.5rem;
           width: 100%;
-          overflow: hidden; /* Add overflow hidden to prevent cut-off */
+          overflow: hidden;
         }
 
         .carousel-nav {
@@ -311,7 +276,7 @@ const Testimonials = () => {
           padding: 1rem 0;
           touch-action: pan-y;
           width: 100%;
-          margin: 0 -0.5rem; /* Negative margin to compensate for slide padding */
+          margin: 0 -0.5rem;
         }
 
         .carousel-track {
@@ -368,9 +333,10 @@ const Testimonials = () => {
           margin-bottom: 1.5rem;
         }
 
+        /* UPDATED: Larger image container */
         .testimonial-image-container {
-          width: 90px;
-          height: 90px;
+          width: 110px; /* Increased from 90px */
+          height: 110px; /* Increased from 90px */
           margin: 0 auto;
           border-radius: 50%;
           overflow: hidden;
@@ -462,7 +428,7 @@ const Testimonials = () => {
           border-radius: 999px;
         }
 
-        /* Desktop specific styles - FIXED */
+        /* Desktop specific styles */
         @media (min-width: 1024px) {
           .testimonial-slide {
             flex: 0 0 calc(100% / 3);
@@ -474,10 +440,9 @@ const Testimonials = () => {
           }
           
           .carousel-dots {
-            display: none; /* Hide dots on desktop */
+            display: none;
           }
           
-          /* Adjust container for proper spacing */
           .carousel-track-container {
             margin: 0 -0.75rem;
           }
@@ -487,7 +452,7 @@ const Testimonials = () => {
           }
         }
 
-        /* Tablet styles - FIXED */
+        /* Tablet styles */
         @media (min-width: 768px) and (max-width: 1023px) {
           .testimonial-slide {
             flex: 0 0 50%;
@@ -498,13 +463,18 @@ const Testimonials = () => {
             gap: 1.5rem;
           }
           
-          /* Adjust container for proper spacing */
           .carousel-track-container {
             margin: 0 -0.75rem;
           }
           
           .testimonial-slide {
             padding: 0 0.75rem;
+          }
+          
+          /* UPDATED: Larger image for tablet */
+          .testimonial-image-container {
+            width: 100px; /* Increased from 80px */
+            height: 100px; /* Increased from 80px */
           }
         }
 
@@ -532,9 +502,10 @@ const Testimonials = () => {
             border-radius: 1.25rem;
           }
           
+          /* UPDATED: Larger image for mobile */
           .testimonial-image-container { 
-            width: 80px; 
-            height: 80px; 
+            width: 95px; /* Increased from 80px */
+            height: 95px; /* Increased from 80px */
           }
           
           .testimonial-text-enhanced { 
@@ -560,7 +531,6 @@ const Testimonials = () => {
             width: 24px; 
           }
           
-          /* Adjust for mobile */
           .carousel-track-container {
             margin: 0 -0.5rem;
           }
@@ -591,6 +561,12 @@ const Testimonials = () => {
           
           .testimonial-card-enhanced {
             padding: 1.25rem;
+          }
+          
+          /* UPDATED: Larger image for small mobile */
+          .testimonial-image-container { 
+            width: 90px; /* Increased from 80px */
+            height: 90px; /* Increased from 80px */
           }
           
           .testimonial-text-enhanced { 
@@ -627,6 +603,12 @@ const Testimonials = () => {
           
           .testimonial-card-enhanced {
             padding: 1rem;
+          }
+          
+          /* UPDATED: Keep reasonable size for very small screens */
+          .testimonial-image-container { 
+            width: 85px; /* Increased from 80px */
+            height: 85px; /* Increased from 80px */
           }
           
           .carousel-track-container {
@@ -717,7 +699,6 @@ const Testimonials = () => {
               </div>
             </div>
 
-            {/* Only show dots on mobile */}
             <div className="carousel-dots">
               {Array.from({ length: Math.ceil(testimonials.length / itemsPerView) }).map((_, index) => (
                 <button

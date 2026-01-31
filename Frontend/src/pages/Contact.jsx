@@ -1,12 +1,9 @@
-import React, { useState } from "react";
-import { Mail, User, MessageSquare, Send, MapPin, Phone, Clock } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Mail, User, MessageSquare, Send, MapPin, Phone, Clock, Loader2 } from "lucide-react";
+import emailjs from "@emailjs/browser";
 
 const ContactUs = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+  const formRef = useRef(null);
 
   const [isFocused, setIsFocused] = useState({
     name: false,
@@ -14,38 +11,73 @@ const ContactUs = () => {
     message: false,
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const [status, setStatus] = useState({ type: "", message: "" }); // "" | "success" | "error"
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleFocus = (field) => {
+    setIsFocused((prev) => ({ ...prev, [field]: true }));
   };
 
-  const handleSubmit = (e) => {
+  const handleBlur = (field) => {
+    setIsFocused((prev) => ({ ...prev, [field]: false }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Contact Form Data:", formData);
-    alert("Thank you! Your message has been submitted.");
-    setFormData({ name: "", email: "", message: "" });
+    setStatus({ type: "", message: "" });
+    setIsLoading(true);
+
+    try {
+      // Use .env variables in production (Vite / Create React App)
+      // Example: VITE_EMAILJS_SERVICE_ID=service_xxxx
+      const result = await emailjs.sendForm(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID || "YOUR_SERVICE_ID",
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID",
+        formRef.current,
+        {
+          publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "YOUR_PUBLIC_KEY",
+        }
+      );
+
+      if (result.text === "OK") {
+        setStatus({
+          type: "success",
+          message: "Message sent successfully! Thank you.",
+        });
+        formRef.current.reset(); // Clear form fields
+      }
+    } catch (error) {
+      console.error("EmailJS failed:", error);
+      setStatus({
+        type: "error",
+        message: "Failed to send. Please try again later.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const contactInfo = [
     {
       icon: <MapPin size={24} />,
       title: "Location",
-      details: "Colombo, Sri Lanka"
+      details: "No.98 Anandha Mawatha Kuliyapitiya",
     },
     {
       icon: <Phone size={24} />,
       title: "Phone",
-      details: "+94 77 478 5555"
+      details: "+94 77 478 5555",
     },
     {
       icon: <Mail size={24} />,
       title: "Email",
-      details: "info@parkinsense.lk"
+      details: "parkinsense.info@gmail.com",
     },
     {
       icon: <Clock size={24} />,
       title: "Working Hours",
-      details: "Mon - Fri: 9AM - 5PM"
-    }
+      details: "Mon - Fri: 9AM - 5PM",
+    },
   ];
 
   return (
@@ -73,39 +105,13 @@ const ContactUs = () => {
           animation: float-circle 8s ease-in-out infinite;
         }
 
-        .circle-1 {
-          width: 300px;
-          height: 300px;
-          top: 10%;
-          right: 10%;
-          animation-delay: 0s;
-        }
-
-        .circle-2 {
-          width: 200px;
-          height: 200px;
-          bottom: 20%;
-          left: 5%;
-          animation-delay: 2s;
-        }
-
-        .circle-3 {
-          width: 150px;
-          height: 150px;
-          top: 50%;
-          left: 15%;
-          animation-delay: 4s;
-        }
+        .circle-1 { width: 300px; height: 300px; top: 10%; right: 10%; animation-delay: 0s; }
+        .circle-2 { width: 200px; height: 200px; bottom: 20%; left: 5%; animation-delay: 2s; }
+        .circle-3 { width: 150px; height: 150px; top: 50%; left: 15%; animation-delay: 4s; }
 
         @keyframes float-circle {
-          0%, 100% {
-            transform: translateY(0) scale(1);
-            opacity: 0.3;
-          }
-          50% {
-            transform: translateY(-30px) scale(1.1);
-            opacity: 0.5;
-          }
+          0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+          50%      { transform: translateY(-30px) scale(1.1); opacity: 0.5; }
         }
 
         .contact-wrapper {
@@ -122,14 +128,8 @@ const ContactUs = () => {
         }
 
         @keyframes fadeInDown {
-          from {
-            opacity: 0;
-            transform: translateY(-30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-30px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
 
         .contact-header h2 {
@@ -163,14 +163,8 @@ const ContactUs = () => {
         }
 
         @keyframes fadeInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
+          from { opacity: 0; transform: translateX(-30px); }
+          to   { opacity: 1; transform: translateX(0); }
         }
 
         .contact-info-card {
@@ -227,22 +221,9 @@ const ContactUs = () => {
           color: white;
         }
 
-        .info-text {
-          flex: 1;
-        }
-
-        .info-text h4 {
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: #475569;
-          margin-bottom: 2px;
-        }
-
-        .info-text p {
-          font-size: 0.95rem;
-          color: #1e293b;
-          font-weight: 500;
-        }
+        .info-text { flex: 1; }
+        .info-text h4 { font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 2px; }
+        .info-text p  { font-size: 0.95rem; color: #1e293b; font-weight: 500; }
 
         .contact-form-section {
           animation: fadeInRight 0.8s ease-out;
@@ -251,14 +232,8 @@ const ContactUs = () => {
         }
 
         @keyframes fadeInRight {
-          from {
-            opacity: 0;
-            transform: translateX(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
+          from { opacity: 0; transform: translateX(30px); }
+          to   { opacity: 1; transform: translateX(0); }
         }
 
         .contact-form {
@@ -269,8 +244,6 @@ const ContactUs = () => {
           padding: 32px;
           box-shadow: 0 10px 40px rgba(139, 92, 246, 0.1);
           height: 100%;
-          display: flex;
-          flex-direction: column;
         }
 
         .form-group {
@@ -278,33 +251,20 @@ const ContactUs = () => {
           position: relative;
         }
 
-        .input-wrapper {
-          position: relative;
-        }
+        .input-wrapper { position: relative; }
 
-        .input-icon {
+        .input-icon, .textarea-icon {
           position: absolute;
           left: 16px;
-          top: 50%;
-          transform: translateY(-50%);
           color: #94a3b8;
           transition: all 0.3s ease;
           pointer-events: none;
         }
-
-        .textarea-icon {
-          position: absolute;
-          left: 16px;
-          top: 24px;
-          color: #94a3b8;
-          transition: all 0.3s ease;
-          pointer-events: none;
-        }
+        .input-icon    { top: 50%; transform: translateY(-50%); }
+        .textarea-icon { top: 24px; }
 
         .form-group.focused .input-icon,
-        .form-group.focused .textarea-icon {
-          color: #8b5cf6;
-        }
+        .form-group.focused .textarea-icon { color: #8b5cf6; }
 
         .contact-form input,
         .contact-form textarea {
@@ -338,6 +298,16 @@ const ContactUs = () => {
           color: #94a3b8;
         }
 
+        .status-message {
+          padding: 12px;
+          border-radius: 12px;
+          margin: 16px 0;
+          text-align: center;
+          font-weight: 500;
+        }
+        .status-success { background: rgba(16, 185, 129, 0.15); color: #065f46; }
+        .status-error   { background: rgba(239, 68, 68, 0.15); color: #991b1b; }
+
         .submit-button {
           width: 100%;
           padding: 16px 32px;
@@ -358,6 +328,11 @@ const ContactUs = () => {
           overflow: hidden;
         }
 
+        .submit-button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
         .submit-button::before {
           content: '';
           position: absolute;
@@ -367,9 +342,7 @@ const ContactUs = () => {
           transition: opacity 0.3s ease;
         }
 
-        .submit-button:hover::before {
-          opacity: 1;
-        }
+        .submit-button:hover::before { opacity: 1; }
 
         .submit-button span,
         .submit-button-icon {
@@ -382,9 +355,7 @@ const ContactUs = () => {
           box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
         }
 
-        .submit-button:active {
-          transform: translateY(0);
-        }
+        .submit-button:active { transform: translateY(0); }
 
         .submit-button-icon {
           width: 20px;
@@ -397,45 +368,23 @@ const ContactUs = () => {
         }
 
         @media (max-width: 968px) {
-          .contact-content {
-            grid-template-columns: 1fr;
-            gap: 40px;
-          }
-
-          .contact-header h2 {
-            font-size: 2.5rem;
-          }
-
-          .contact-form {
-            padding: 32px;
-          }
+          .contact-content { grid-template-columns: 1fr; gap: 40px; }
+          .contact-header h2 { font-size: 2.5rem; }
         }
 
         @media (max-width: 640px) {
-          .contact-us-section {
-            padding: 60px 15px;
-          }
-
-          .contact-header h2 {
-            font-size: 2rem;
-          }
-
-          .contact-header p {
-            font-size: 1rem;
-          }
-
-          .contact-info-card,
-          .contact-form {
-            padding: 24px;
-          }
+          .contact-us-section { padding: 60px 15px; }
+          .contact-header h2 { font-size: 2rem; }
+          .contact-header p { font-size: 1rem; }
+          .contact-info-card, .contact-form { padding: 24px; }
         }
       `}</style>
 
       <section className="contact-us-section">
         <div className="contact-bg-circles">
-          <div className="circle-shape circle-1"></div>
-          <div className="circle-shape circle-2"></div>
-          <div className="circle-shape circle-3"></div>
+          <div className="circle-shape circle-1" />
+          <div className="circle-shape circle-2" />
+          <div className="circle-shape circle-3" />
         </div>
 
         <div className="contact-wrapper">
@@ -451,9 +400,7 @@ const ContactUs = () => {
                 <div className="contact-info-items">
                   {contactInfo.map((item, index) => (
                     <div className="contact-info-item" key={index}>
-                      <div className="info-icon">
-                        {item.icon}
-                      </div>
+                      <div className="info-icon">{item.icon}</div>
                       <div className="info-text">
                         <h4>{item.title}</h4>
                         <p>{item.details}</p>
@@ -466,55 +413,77 @@ const ContactUs = () => {
 
             <div className="contact-form-section">
               <div className="contact-form">
-                <div className={`form-group ${isFocused.name ? 'focused' : ''}`}>
-                  <div className="input-wrapper">
-                    <User className="input-icon" size={20} />
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      onFocus={() => setIsFocused({...isFocused, name: true})}
-                      onBlur={() => setIsFocused({...isFocused, name: false})}
-                      placeholder="Your Name"
-                    />
+                <form ref={formRef} onSubmit={handleSubmit}>
+                  <div className={`form-group ${isFocused.name ? "focused" : ""}`}>
+                    <div className="input-wrapper">
+                      <User className="input-icon" size={20} />
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="Your Name"
+                        onFocus={() => handleFocus("name")}
+                        onBlur={() => handleBlur("name")}
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className={`form-group ${isFocused.email ? 'focused' : ''}`}>
-                  <div className="input-wrapper">
-                    <Mail className="input-icon" size={20} />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      onFocus={() => setIsFocused({...isFocused, email: true})}
-                      onBlur={() => setIsFocused({...isFocused, email: false})}
-                      placeholder="Your Email"
-                    />
+                  <div className={`form-group ${isFocused.email ? "focused" : ""}`}>
+                    <div className="input-wrapper">
+                      <Mail className="input-icon" size={20} />
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="Your Email"
+                        onFocus={() => handleFocus("email")}
+                        onBlur={() => handleBlur("email")}
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className={`form-group ${isFocused.message ? 'focused' : ''}`}>
-                  <div className="input-wrapper">
-                    <MessageSquare className="textarea-icon" size={20} />
-                    <textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      onFocus={() => setIsFocused({...isFocused, message: true})}
-                      onBlur={() => setIsFocused({...isFocused, message: false})}
-                      placeholder="Your Message"
-                      rows="5"
-                    ></textarea>
+                  <div className={`form-group ${isFocused.message ? "focused" : ""}`}>
+                    <div className="input-wrapper">
+                      <MessageSquare className="textarea-icon" size={20} />
+                      <textarea
+                        name="message"
+                        placeholder="Your Message"
+                        rows={5}
+                        onFocus={() => handleFocus("message")}
+                        onBlur={() => handleBlur("message")}
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <button type="button" onClick={handleSubmit} className="submit-button">
-                  <span>Send Message</span>
-                  <Send className="submit-button-icon" />
-                </button>
+                  {status.message && (
+                    <div
+                      className={`status-message ${
+                        status.type === "success" ? "status-success" : "status-error"
+                      }`}
+                    >
+                      {status.message}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="submit-button"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="animate-spin" size={20} />
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Message</span>
+                        <Send className="submit-button-icon" />
+                      </>
+                    )}
+                  </button>
+                </form>
               </div>
             </div>
           </div>

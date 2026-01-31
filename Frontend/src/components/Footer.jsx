@@ -644,7 +644,7 @@ const Footer = () => {
                 <div className="parkinsense-contact-items">
                   <div className="parkinsense-contact-item">
                     <div className="parkinsense-contact-icon"><MapPin size={18} /></div>
-                    <span>Colombo, Sri Lanka</span>
+                    <span>No.98 Anandha Mawatha Kuliyapitiya</span>
                   </div>
                   <div className="parkinsense-contact-item">
                     <div className="parkinsense-contact-icon"><Phone size={18} /></div>
@@ -652,7 +652,7 @@ const Footer = () => {
                   </div>
                   <div className="parkinsense-contact-item">
                     <div className="parkinsense-contact-icon"><Mail size={18} /></div>
-                    <span>info@parkinsense.lk</span>
+                    <span>parkinsense.info@gmail.com</span>
                   </div>
                 </div>
                 <div className="parkinsense-social-icons">
