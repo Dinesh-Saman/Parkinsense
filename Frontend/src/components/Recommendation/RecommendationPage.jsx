@@ -21,7 +21,7 @@ const RecommendationPage = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/recommendations/${id}`);
+        const { data } = await axios.get(`https://parkinsensebackend-2pvupvarq-dineshs-projects-d4453a53.vercel.app/api/recommendations/${id}`);
         setRecommendations(data.recommendations || []);
         setPatientStage(data.patientStage || "");
       } catch {
