@@ -242,7 +242,7 @@ function AssessmentForm() {
       // Simulate API delay for better UX
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const res = await axios.post("http://localhost:5000/api/assessments", payload);
+      const res = await axios.post("https://parkinsensebackend-2pvupvarq-dineshs-projects-d4453a53.vercel.app/api/assessments", payload);
       const assessmentId = res.data.data.id;
 
       // Clear storage ONLY after successful submission
