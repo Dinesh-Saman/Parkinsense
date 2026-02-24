@@ -4,26 +4,25 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
-import torchaudio
 from torchvision import transforms, models
 from pathlib import Path
 import os
 import pandas as pd
 from sklearn.metrics import accuracy_score
 
-# ------------------- AUTO FIND YOUR DATASET -------------------
-possible_paths = list(Path(".").rglob("voice"))
+# ------------------- AUTO FIND YOUR DATASET (wave folder) -------------------
+possible_paths = list(Path(".").rglob("wave"))
 if not possible_paths:
-    print("voice folder not found!")
+    print("wave folder not found!")
     print("Expected structure:")
-    print("   any_folder/voice/training/healthy/*.wav")
-    print("   any_folder/voice/training/parkinson/*.wav")
-    print("   any_folder/voice/testing/healthy/*.wav")
-    print("   any_folder/voice/testing/parkinson/*.wav")
+    print("   any_folder/wave/training/healthy/*.png")
+    print("   any_folder/wave/training/parkinson/*.png")
+    print("   any_folder/wave/testing/healthy/*.png")
+    print("   any_folder/wave/testing/parkinson/*.png")
     exit()
 
 DATA_DIR = possible_paths[0]
-print(f"Voice dataset found → {DATA_DIR}")
+print(f"Voice dataset (spectrograms) found → {DATA_DIR}")
 
 TRAIN_HEALTHY = DATA_DIR / "training" / "healthy"
 TRAIN_PD      = DATA_DIR / "training" / "parkinson"
@@ -31,51 +30,50 @@ TEST_HEALTHY  = DATA_DIR / "testing" / "healthy"
 TEST_PD       = DATA_DIR / "testing" / "parkinson"
 
 if not all(p.exists() for p in [TRAIN_HEALTHY, TRAIN_PD, TEST_HEALTHY, TEST_PD]):
-    print("Missing subfolders!")
+    print("Missing subfolders in wave directory!")
     exit()
 
-# ------------------- Voice Dataset Class -------------------
+# ------------------- Voice Dataset Class (Image based) -------------------
 class VoiceDataset(Dataset):
-    def __init__(self, healthy_dir, pd_dir, sample_rate=16000, n_mels=128, target_size=224):
-        self.audio_paths = []
+    def __init__(self, healthy_dir, pd_dir, transform=None):
+        self.image_paths = []
         self.labels = []
 
-        for p in healthy_dir.glob("*.*"):
-            self.audio_paths.append(p)
+        for p in healthy_dir.glob("*.png"):
+            self.image_paths.append(p)
             self.labels.append(0)
-        for p in pd_dir.glob("*.*"):
-            self.audio_paths.append(p)
+        for p in pd_dir.glob("*.png"):
+            self.image_paths.append(p)
             self.labels.append(1)
 
-        self.sample_rate = sample_rate
-        self.n_mels = n_mels
-        self.target_size = target_size
+        self.transform = transform
 
-    def __len__(self): return len(self.audio_paths)
+    def __len__(self): return len(self.image_paths)
 
     def __getitem__(self, idx):
-        waveform, sr = torchaudio.load(self.audio_paths[idx])
-        if sr != self.sample_rate:
-            waveform = torchaudio.transforms.Resample(sr, self.sample_rate)(waveform)
-        if waveform.shape[0] > 1:
-            waveform = torch.mean(waveform, dim=0, keepdim=True)
+        from PIL import Image
+        img = Image.open(self.image_paths[idx]).convert("RGB")
+        if self.transform:
+            img = self.transform(img)
+        return img, self.labels[idx]
 
-        mel = torchaudio.transforms.MelSpectrogram(
-            sample_rate=self.sample_rate, n_fft=1024, hop_length=512,
-            n_mels=self.n_mels, normalized=True
-        )(waveform)
-        mel_db = torchaudio.transforms.AmplitudeToDB()(mel)
-        resize = transforms.Resize((self.target_size, self.target_size))
-        mel_resized = resize(mel_db)
-        mel_3ch = mel_resized.repeat(3, 1, 1)
+# Standard transforms with Augmentation for training
+train_transform = transforms.Compose([
+    transforms.Resize((256, 256)),
+    transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
+    transforms.ColorJitter(brightness=0.1, contrast=0.1),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
 
-        return mel_3ch, self.labels[idx]
+test_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
 
-train_dataset = VoiceDataset(TRAIN_HEALTHY, TRAIN_PD)
-test_dataset  = VoiceDataset(TEST_HEALTHY, TEST_PD)
-
-print(f"Training audios  : {len(train_dataset)}")
-print(f"Testing audios   : {len(test_dataset)}")
+train_dataset = VoiceDataset(TRAIN_HEALTHY, TRAIN_PD, transform=train_transform)
+test_dataset  = VoiceDataset(TEST_HEALTHY, TEST_PD, transform=test_transform)
 
 train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, drop_last=True)
 test_loader  = DataLoader(test_dataset, batch_size=8, shuffle=False)

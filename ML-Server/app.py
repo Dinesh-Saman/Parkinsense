@@ -5,6 +5,7 @@ from PIL import Image
 import torch
 from torchvision import transforms, models
 import os
+from voice_predict import predict_voice
 
 app = Flask(__name__)
 CORS(app)   # ← THIS ALLOWS REACT TO CONNECT!
@@ -47,6 +48,21 @@ def predict():
         "confidence": confidence,
         "hasParkinson": prediction == "Parkinson"
     })
+
+@app.route("/predict_voice", methods=["POST"])
+def predict_voice_route():
+    if "audio" not in request.files:
+        return jsonify({"error": "No audio file"}), 400
+    
+    audio_file = request.files["audio"]
+    audio_content = audio_file.read()
+    
+    result = predict_voice(audio_content)
+    
+    if "error" in result:
+        return jsonify(result), 500
+        
+    return jsonify(result)
 
 if __name__ == "__main__":
     print("AI Server running → http://localhost:5001/predict")

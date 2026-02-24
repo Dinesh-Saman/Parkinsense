@@ -34,7 +34,7 @@ exports.analyzeVoice = async (req, res) => {
     // Format response consistently with spiral controller
     res.json({
       hasParkinson: prediction === "Parkinson",
-      confidence: (confidence * 100).toFixed(2) + "%",
+      confidence: confidence + "%",
       message: prediction === "Parkinson"
         ? "Voice indicates possible Parkinson's disease"
         : "Voice appears normal"
@@ -45,9 +45,9 @@ exports.analyzeVoice = async (req, res) => {
     if (error.response) {
       console.error("ML voice endpoint response:", error.response.data);
     }
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to analyze voice recording",
-      details: error.message 
+      details: error.message
     });
   }
 };

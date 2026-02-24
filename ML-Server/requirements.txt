@@ -4,4 +4,15 @@ gunicorn==23.0.0
 pillow==10.4.0
 torch==2.5.0+cpu
 torchvision==0.20.0+cpu
+torchaudio==2.5.0+cpu
 --extra-index-url https://download.pytorch.org/whl/cpu
+# UCI voice pipeline
+ucimlrepo
+scikit-learn
+joblib
+praat-parselmouth
+librosa
+soundfile
+xgboost
+imbalanced-learn
+openpyxl

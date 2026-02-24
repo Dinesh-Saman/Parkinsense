@@ -91,10 +91,6 @@ const SpiralTestPage = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  // Speak instruction automatically when language changes or page loads
-  useEffect(() => {
-    setTimeout(() => speak(t("draw_spiral_instruction")), 1200);
-  }, [i18n.language]);
 
   // ── Drawing Handlers ────────────────────────────────────────
   const startDrawing = (e) => {
@@ -159,14 +155,12 @@ const SpiralTestPage = () => {
     setPreviewUrl(null);
     setSaved(false);
     setDrawingHistory([]);
-    speak(t("draw_spiral_instruction"));
   };
 
   // ── Analysis & Upload ───────────────────────────────────────
   const analyzeImage = async (imageFile) => {
     setLoading(true);
     setResult(null);
-    speak(t("analyzing"));
 
     const formData = new FormData();
     formData.append("image", imageFile);
@@ -174,7 +168,6 @@ const SpiralTestPage = () => {
     try {
       const res = await axios.post("http://localhost:5001/predict", formData);
       setResult(res.data);
-      speak(res.data.hasParkinson ? t("result_parkinson") : t("result_healthy"));
     } catch (err) {
       alert("AI server not running! Please run: python app.py");
     }
@@ -195,6 +188,7 @@ const SpiralTestPage = () => {
 
   // ── Save & Share ─────────────────────────────────────────────
   const saveToHistory = () => {
+    if (!result) return;
     const history = JSON.parse(localStorage.getItem("spiralHistory") || "[]");
     history.unshift({
       date: new Date().toLocaleString(),
@@ -209,11 +203,11 @@ const SpiralTestPage = () => {
   };
 
   const shareOnWhatsApp = () => {
+    if (!result) return;
     const text = encodeURIComponent(
-      `${
-        i18n.language === "si"
-          ? "සර්පිල පරීක්ෂණ ප්‍රතිඵලය"
-          : i18n.language === "ta"
+      `${i18n.language === "si"
+        ? "සර්පිල පරීක්ෂණ ප්‍රතිඵලය"
+        : i18n.language === "ta"
           ? "சுருள் சோதனை முடிவு"
           : "Spiral Test Result"
       }\n\n${result.prediction}\nConfidence: ${result.confidence}%\n\nParkinSense`

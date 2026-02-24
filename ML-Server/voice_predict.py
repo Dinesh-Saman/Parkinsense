@@ -1,115 +1,81 @@
 # ML-Server/voice_predict.py
 """
 Voice analysis prediction module for ParkinSense
-Processes uploaded audio → extracts Mel-spectrogram → runs through trained model → returns PD prediction
+Pipeline: upload audio → extract 22 UCI biomedical features → scikit-learn model → PD prediction
 """
 
-import torch
-import torchaudio
-import torch.nn as nn
-from torchvision import models
+import joblib
+import numpy as np
 import os
-from io import BytesIO
 
-# ────────────────────────────────────────────────
-# Model Definition (change this to match YOUR trained architecture)
-# ────────────────────────────────────────────────
-class VoiceParkinsonModel(nn.Module):
-    def __init__(self):
-        super(VoiceParkinsonModel, self).__init__()
-        # Using ResNet18 backbone (common choice for spectrogram-based PD detection)
-        self.backbone = models.resnet18(pretrained=False)
-        # Modify first conv layer to accept 1-channel spectrogram if needed
-        # (most papers repeat 1 channel → 3 channels to use pretrained weights)
-        self.backbone.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        self.backbone.fc = nn.Linear(self.backbone.fc.in_features, 1)  # Binary output (PD vs Healthy)
+# ─────────────────────────────────────────────────────────────
+# Load trained model, scaler, and feature column order
+# ─────────────────────────────────────────────────────────────
+_MODEL_PATH   = "model/voice_uci_model.pkl"
+_SCALER_PATH  = "model/voice_scaler.pkl"
+_SELECTOR_PATH = "model/voice_selector.pkl"
+_COLUMNS_PATH = "model/voice_feature_columns.pkl"
 
-    def forward(self, x):
-        return self.backbone(x)
+_model    = None
+_scaler   = None
+_selector = None
+_columns  = None
 
-# ────────────────────────────────────────────────
-# Load the trained model (update path & device)
-# ────────────────────────────────────────────────
-VOICE_MODEL_PATH = "model/best_voice_model.pth"  # ← CHANGE TO YOUR ACTUAL MODEL FILE
+def _load_artifacts():
+    global _model, _scaler, _selector, _columns
+    if _model is not None:
+        return  # already loaded
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if not os.path.exists(_MODEL_PATH):
+        raise FileNotFoundError(
+            f"Voice model not found at '{_MODEL_PATH}'.\n"
+            "Run:  python train_voice_dataset.py"
+        )
 
-voice_model = VoiceParkinsonModel()
-voice_model.load_state_dict(torch.load(VOICE_MODEL_PATH, map_location=device))
-voice_model.to(device)
-voice_model.eval()
+    _model    = joblib.load(_MODEL_PATH)
+    _scaler   = joblib.load(_SCALER_PATH)
+    _selector = joblib.load(_SELECTOR_PATH)
+    _columns  = joblib.load(_COLUMNS_PATH)
+    print(f"[voice_predict] UCI model and selector loaded from model/")
 
-print(f"Voice model loaded successfully from: {VOICE_MODEL_PATH}")
-print(f"Running on device: {device}")
-
-# ────────────────────────────────────────────────
-# Audio Preprocessing Pipeline
-# ────────────────────────────────────────────────
-def preprocess_voice(audio_content, sample_rate=16000, n_mels=128, n_fft=1024, hop_length=512, target_length=224):
-    """
-    Convert raw audio bytes → Mel-spectrogram → resized tensor ready for model
-    Input: audio_content (bytes from request.files['audio'].read())
-    Output: torch.Tensor of shape (1, 3, 224, 224)
-    """
-    # Load from bytes
-    waveform, orig_sr = torchaudio.load(BytesIO(audio_content))
-
-    # Resample if needed
-    if orig_sr != sample_rate:
-        resampler = torchaudio.transforms.Resample(orig_sr, sample_rate)
-        waveform = resampler(waveform)
-
-    # Convert to mono if stereo
-    if waveform.shape[0] > 1:
-        waveform = torch.mean(waveform, dim=0, keepdim=True)
-
-    # Mel Spectrogram
-    mel_transform = torchaudio.transforms.MelSpectrogram(
-        sample_rate=sample_rate,
-        n_fft=n_fft,
-        hop_length=hop_length,
-        n_mels=n_mels,
-        normalized=True
-    )
-    mel_spec = mel_transform(waveform)
-
-    # To dB scale (most papers use log scale)
-    mel_spec_db = torchaudio.transforms.AmplitudeToDB()(mel_spec)
-
-    # Resize to fixed size expected by model (e.g. 224×224)
-    resize = torchaudio.transforms.Resize((target_length, target_length))
-    mel_spec_resized = resize(mel_spec_db)
-
-    # Repeat channel from 1 → 3 (to match ResNet input)
-    mel_spec_3ch = mel_spec_resized.repeat(3, 1, 1)  # (3, H, W)
-
-    return mel_spec_3ch.unsqueeze(0)  # (1, 3, H, W)
-
-# ────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────
 # Main prediction function (called from Flask route)
-# ────────────────────────────────────────────────
-def predict_voice(audio_content):
+# ─────────────────────────────────────────────────────────────
+def predict_voice(audio_content: bytes) -> dict:
     """
-    Input: audio_content → bytes from request.files['audio'].read()
-    Returns: dict with prediction, confidence, hasParkinson
+    Input:  audio_content → bytes from request.files['audio'].read()
+    Returns: dict with 'prediction', 'confidence', 'hasParkinson', and 'features'
     """
     try:
-        input_tensor = preprocess_voice(audio_content).to(device)
+        _load_artifacts()
 
-        with torch.no_grad():
-            output = voice_model(input_tensor)
-            prob = torch.sigmoid(output).squeeze().item()
+        # Extract 71 biomedical voice features from the audio
+        from extract_voice_features import extract_features_from_audio, UCI_FEATURE_NAMES
+        features = extract_features_from_audio(audio_content)  # shape (71,)
 
-        # Threshold at 0.5 (adjust if you tuned differently)
-        prediction = "Parkinson" if prob > 0.5 else "Healthy"
-        # Confidence: probability of the predicted class
-        confidence = round((prob if prediction == "Parkinson" else 1 - prob) * 100, 2)
+        # Scale, Select Top Features, and Predict
+        features_scaled = _scaler.transform(features.reshape(1, -1))
+        features_selected = _selector.transform(features_scaled)
+        
+        pred_label = _model.predict(features_selected)[0]          # 0=healthy, 1=PD
+        proba      = _model.predict_proba(features_selected)[0]    # [P(healthy), P(PD)]
+
+        pd_prob     = float(proba[1])
+        is_parkinson = bool(pred_label == 1)
+        prediction   = "Parkinson" if is_parkinson else "Healthy"
+        confidence   = round((pd_prob if is_parkinson else 1 - pd_prob) * 100, 2)
+
+        # Return named feature values for transparency
+        feature_dict = {name: round(float(val), 6) for name, val in zip(UCI_FEATURE_NAMES, features)}
 
         return {
-            "prediction": prediction,
-            "confidence": confidence,
-            "hasParkinson": prediction == "Parkinson"
+            "prediction":   prediction,
+            "confidence":   confidence,
+            "hasParkinson": is_parkinson,
+            "features":     feature_dict
         }
 
+    except ValueError as e:
+        return {"error": str(e)}
     except Exception as e:
         return {"error": f"Voice processing failed: {str(e)}"}

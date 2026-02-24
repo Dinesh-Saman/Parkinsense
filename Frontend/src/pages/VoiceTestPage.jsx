@@ -27,10 +27,10 @@ const VoiceTestPage = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -57,17 +57,17 @@ const VoiceTestPage = () => {
     const voices = window.speechSynthesis.getVoices();
 
     if (i18n.language === "si") {
-      const sinhalaVoice = voices.find(v => v.lang.startsWith("si") && v.name.toLowerCase().includes("female")) 
+      const sinhalaVoice = voices.find(v => v.lang.startsWith("si") && v.name.toLowerCase().includes("female"))
         || voices.find(v => v.lang.startsWith("si"));
       if (sinhalaVoice) utterance.voice = sinhalaVoice;
       utterance.lang = "si-LK";
     } else if (i18n.language === "ta") {
-      const tamilVoice = voices.find(v => v.lang.startsWith("ta") && v.name.toLowerCase().includes("female")) 
+      const tamilVoice = voices.find(v => v.lang.startsWith("ta") && v.name.toLowerCase().includes("female"))
         || voices.find(v => v.lang.startsWith("ta"));
       if (tamilVoice) utterance.voice = tamilVoice;
       utterance.lang = "ta-IN";
     } else {
-      const englishVoice = 
+      const englishVoice =
         voices.find(v => v.name.includes("Samantha") || v.name.includes("Aria") || v.name.includes("Jenny")) ||
         voices.find(v => v.lang.startsWith("en") && v.name.toLowerCase().includes("female"));
       if (englishVoice) utterance.voice = englishVoice;
@@ -77,10 +77,6 @@ const VoiceTestPage = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  // Auto speak instruction on page load
-  useEffect(() => {
-    setTimeout(() => speak(t("Speak clearly for 15 seconds. Our AI will analyze your voice for Parkinson's indicators.")), 1200);
-  }, [i18n.language]);
 
   // Recording timer
   useEffect(() => {
@@ -114,7 +110,6 @@ const VoiceTestPage = () => {
       mediaRecorderRef.current.start();
       setIsRecording(true);
       setRecordingTime(0);
-      speak(t("recording_started"));
     } catch (err) {
       alert("Microphone access denied or not available.");
     }
@@ -124,14 +119,12 @@ const VoiceTestPage = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      speak(t("recording_stopped"));
     }
   };
 
   const analyzeAudio = async (audioFile) => {
     setLoading(true);
     setResult(null);
-    speak(t("analyzing"));
 
     const formData = new FormData();
     formData.append("audio", audioFile, "voice.webm");
@@ -141,9 +134,8 @@ const VoiceTestPage = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setResult(res.data);
-      speak(res.data.hasParkinson ? t("result_parkinson") : t("result_healthy"));
     } catch (err) {
-      alert("AI server not running! Please run: python voice_app.py");
+      alert("Error connecting to backend or AI server!");
       console.error(err);
     }
     setLoading(false);
@@ -164,10 +156,10 @@ const VoiceTestPage = () => {
     setResult(null);
     setSaved(false);
     setRecordingTime(0);
-    speak(t("Speak clearly for 15 seconds. Our AI will analyze your voice for Parkinson's indicators."));
   };
 
   const saveToHistory = () => {
+    if (!result) return;
     const history = JSON.parse(localStorage.getItem("voiceHistory") || "[]");
     history.unshift({
       date: new Date().toLocaleString(),
@@ -182,6 +174,7 @@ const VoiceTestPage = () => {
   };
 
   const shareOnWhatsApp = () => {
+    if (!result) return;
     const text = encodeURIComponent(
       `${i18n.language === "si" ? "වාචික පරීක්ෂණ ප්‍රතිඵලය" : i18n.language === "ta" ? "குரல் சோதனை முடிவு" : "Voice Test Result"}\n\n${result.prediction}\nConfidence: ${result.confidence}%\n\nParkinSense`
     );
@@ -197,19 +190,19 @@ const VoiceTestPage = () => {
       overflowX: 'hidden'
     }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: isMobile ? "20px" : "40px" }}>
-        
+
         {/* Header */}
-        <div style={{ 
-          textAlign: "center", 
-          marginBottom: isMobile ? "30px" : "60px", 
-          paddingBottom: isMobile ? "20px" : "30px", 
-          borderBottom: "1px solid #e2e8f0" 
+        <div style={{
+          textAlign: "center",
+          marginBottom: isMobile ? "30px" : "60px",
+          paddingBottom: isMobile ? "20px" : "30px",
+          borderBottom: "1px solid #e2e8f0"
         }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: isMobile ? '10px' : '20px', 
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: isMobile ? '10px' : '20px',
             marginBottom: isMobile ? '10px' : '20px',
             flexWrap: 'wrap'
           }}>
@@ -226,12 +219,12 @@ const VoiceTestPage = () => {
               {t("Voice Test")}
             </h1>
           </div>
-          <p style={{ 
-            fontSize: isMobile ? "1rem" : "1.25rem", 
-            color: "#64748b", 
-            marginTop: "10px", 
-            maxWidth: "600px", 
-            margin: "0 auto", 
+          <p style={{
+            fontSize: isMobile ? "1rem" : "1.25rem",
+            color: "#64748b",
+            marginTop: "10px",
+            maxWidth: "600px",
+            margin: "0 auto",
             lineHeight: "1.6",
             padding: isMobile ? "0 10px" : "0"
           }}>
@@ -240,13 +233,13 @@ const VoiceTestPage = () => {
         </div>
 
         {/* Main Grid */}
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", 
-          gap: isMobile ? "40px" : "60px", 
-          alignItems: "start" 
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: isMobile ? "40px" : "60px",
+          alignItems: "start"
         }}>
-          
+
           {/* Left Panel - Recording/Upload Area */}
           <div style={{
             background: "white",
@@ -256,7 +249,7 @@ const VoiceTestPage = () => {
             border: "1px solid #e2e8f0",
             order: isMobile ? 1 : 'initial'
           }}>
-            
+
             {/* Mode Toggle */}
             <div style={{
               display: "flex",
@@ -323,23 +316,23 @@ const VoiceTestPage = () => {
                   border: `2px solid ${isRecording ? "#dc2626" : "#e2e8f0"}`,
                   transition: "all 0.3s"
                 }}>
-                  <div style={{ 
-                    fontSize: isMobile ? "2.5rem" : "3rem", 
-                    color: isRecording ? "#dc2626" : "#3b82f6", 
-                    marginBottom: "10px" 
+                  <div style={{
+                    fontSize: isMobile ? "2.5rem" : "3rem",
+                    color: isRecording ? "#dc2626" : "#3b82f6",
+                    marginBottom: "10px"
                   }}>
                     {isRecording ? <FaStop /> : <FaMicrophone />}
                   </div>
-                  <p style={{ 
-                    fontSize: isMobile ? "1.25rem" : "1.5rem", 
-                    fontWeight: "600", 
+                  <p style={{
+                    fontSize: isMobile ? "1.25rem" : "1.5rem",
+                    fontWeight: "600",
                     color: isRecording ? "#dc2626" : "#334155",
                     marginBottom: isMobile ? "5px" : "10px"
                   }}>
                     {isRecording ? `${recordingTime}s` : "Ready to Record"}
                   </p>
                   {isRecording && <p style={{ color: "#dc2626", fontSize: isMobile ? "0.85rem" : "0.95rem" }}>Recording in progress...</p>}
-                  
+
                   {!isRecording && (
                     <button
                       onClick={() => speak(t("Speak clearly for 15 seconds. Our AI will analyze your voice for Parkinson's indicators."))}
@@ -362,9 +355,9 @@ const VoiceTestPage = () => {
                   )}
                 </div>
 
-                <div style={{ 
-                  display: "flex", 
-                  gap: isMobile ? "12px" : "16px", 
+                <div style={{
+                  display: "flex",
+                  gap: isMobile ? "12px" : "16px",
                   justifyContent: "center",
                   flexWrap: isMobile ? "wrap" : "nowrap"
                 }}>
@@ -431,9 +424,9 @@ const VoiceTestPage = () => {
 
                 {previewUrl && (
                   <div style={{ marginTop: "20px" }}>
-                    <audio 
-                      controls 
-                      src={previewUrl} 
+                    <audio
+                      controls
+                      src={previewUrl}
                       style={{ width: "100%" }}
                       ref={audioRef}
                     />
@@ -444,16 +437,16 @@ const VoiceTestPage = () => {
               <div style={{ textAlign: "center", padding: isMobile ? "30px 10px" : "60px 20px" }}>
                 {!previewUrl ? (
                   <>
-                    <input 
-                      ref={fileInputRef} 
-                      type="file" 
-                      accept="audio/*" 
-                      onChange={handleFileUpload} 
-                      style={{ display: "none" }} 
-                      id="voiceUpload" 
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleFileUpload}
+                      style={{ display: "none" }}
+                      id="voiceUpload"
                     />
-                    <label 
-                      htmlFor="voiceUpload" 
+                    <label
+                      htmlFor="voiceUpload"
                       style={{
                         padding: isMobile ? "40px 20px" : "60px 40px",
                         background: "white",
@@ -473,11 +466,11 @@ const VoiceTestPage = () => {
                       }}
                     >
                       <FaUpload size={isMobile ? 32 : 48} style={{ marginBottom: "15px", color: "#94a3b8" }} />
-                      <p style={{ 
-                        fontSize: isMobile ? "1.1rem" : "1.25rem", 
-                        fontWeight: "600", 
-                        marginBottom: "8px", 
-                        color: "#334155" 
+                      <p style={{
+                        fontSize: isMobile ? "1.1rem" : "1.25rem",
+                        fontWeight: "600",
+                        marginBottom: "8px",
+                        color: "#334155"
                       }}>
                         Upload Voice Recording
                       </p>
@@ -491,22 +484,22 @@ const VoiceTestPage = () => {
                   </>
                 ) : (
                   <div>
-                    <div style={{ 
-                      display: "flex", 
-                      justifyContent: "space-between", 
-                      alignItems: "center", 
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
                       marginBottom: "15px",
                       flexWrap: 'wrap'
                     }}>
-                      <p style={{ 
-                        fontSize: isMobile ? "1rem" : "1.125rem", 
-                        color: "#334155", 
-                        fontWeight: "600" 
+                      <p style={{
+                        fontSize: isMobile ? "1rem" : "1.125rem",
+                        color: "#334155",
+                        fontWeight: "600"
                       }}>
                         Preview
                       </p>
-                      <button 
-                        onClick={() => fileInputRef.current.click()} 
+                      <button
+                        onClick={() => fileInputRef.current.click()}
                         style={{
                           padding: "8px 16px",
                           background: "#f1f5f9",
@@ -522,10 +515,10 @@ const VoiceTestPage = () => {
                         Change Audio
                       </button>
                     </div>
-                    <audio 
-                      controls 
-                      src={previewUrl} 
-                      style={{ width: "100%", marginBottom: "20px" }} 
+                    <audio
+                      controls
+                      src={previewUrl}
+                      style={{ width: "100%", marginBottom: "20px" }}
                     />
                   </div>
                 )}
@@ -556,17 +549,17 @@ const VoiceTestPage = () => {
                   animation: "spin 1s linear infinite",
                   margin: "0 auto 20px"
                 }}></div>
-                <p style={{ 
-                  fontSize: isMobile ? "1.1rem" : "1.25rem", 
-                  color: "#334155", 
-                  fontWeight: "600" 
+                <p style={{
+                  fontSize: isMobile ? "1.1rem" : "1.25rem",
+                  color: "#334155",
+                  fontWeight: "600"
                 }}>
                   Analyzing Voice Pattern
                 </p>
-                <p style={{ 
-                  color: "#94a3b8", 
-                  marginTop: "8px", 
-                  fontSize: isMobile ? "0.9rem" : "1rem" 
+                <p style={{
+                  color: "#94a3b8",
+                  marginTop: "8px",
+                  fontSize: isMobile ? "0.9rem" : "1rem"
                 }}>
                   Our AI is examining speech for Parkinson's indicators...
                 </p>
@@ -579,22 +572,22 @@ const VoiceTestPage = () => {
                 boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
                 border: "1px solid #e2e8f0"
               }}>
-                <div style={{ 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: isMobile ? "10px" : "15px", 
-                  marginBottom: isMobile ? "20px" : "30px" 
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: isMobile ? "10px" : "15px",
+                  marginBottom: isMobile ? "20px" : "30px"
                 }}>
-                  <div style={{ 
-                    width: isMobile ? "8px" : "12px", 
-                    height: isMobile ? "30px" : "40px", 
-                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)", 
-                    borderRadius: "4px" 
+                  <div style={{
+                    width: isMobile ? "8px" : "12px",
+                    height: isMobile ? "30px" : "40px",
+                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                    borderRadius: "4px"
                   }} />
-                  <h2 style={{ 
-                    fontSize: isMobile ? "1.25rem" : "1.5rem", 
-                    fontWeight: "700", 
-                    color: "#1e293b" 
+                  <h2 style={{
+                    fontSize: isMobile ? "1.25rem" : "1.5rem",
+                    fontWeight: "700",
+                    color: "#1e293b"
                   }}>
                     Analysis Results
                   </h2>
@@ -617,7 +610,7 @@ const VoiceTestPage = () => {
                   }}>
                     {result.prediction}
                   </h3>
-                  
+
                   <div style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -627,10 +620,10 @@ const VoiceTestPage = () => {
                     marginBottom: isMobile ? "15px" : "20px",
                     border: "1px solid #e2e8f0"
                   }}>
-                    <span style={{ 
-                      color: "#64748b", 
-                      marginRight: "6px", 
-                      fontSize: isMobile ? "0.9rem" : "1rem" 
+                    <span style={{
+                      color: "#64748b",
+                      marginRight: "6px",
+                      fontSize: isMobile ? "0.9rem" : "1rem"
                     }}>
                       Confidence:
                     </span>
@@ -652,11 +645,11 @@ const VoiceTestPage = () => {
                   </p>
                 </div>
 
-                <div style={{ 
-                  display: "grid", 
-                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", 
-                  gap: isMobile ? "12px" : "16px", 
-                  marginTop: isMobile ? "20px" : "30px" 
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                  gap: isMobile ? "12px" : "16px",
+                  marginTop: isMobile ? "20px" : "30px"
                 }}>
                   <button onClick={saveToHistory} style={{
                     padding: isMobile ? "14px" : "16px",
@@ -673,20 +666,20 @@ const VoiceTestPage = () => {
                     gap: "8px",
                     transition: "all 0.2s"
                   }}
-                  onMouseEnter={e => {
-                    if (!saved) {
-                      e.currentTarget.style.background = "#3b82f6";
-                      e.currentTarget.style.color = "white";
-                      e.currentTarget.style.borderColor = "#3b82f6";
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!saved) {
-                      e.currentTarget.style.background = "#f8fafc";
-                      e.currentTarget.style.color = "#334155";
-                      e.currentTarget.style.borderColor = "#e2e8f0";
-                    }
-                  }}
+                    onMouseEnter={e => {
+                      if (!saved) {
+                        e.currentTarget.style.background = "#3b82f6";
+                        e.currentTarget.style.color = "white";
+                        e.currentTarget.style.borderColor = "#3b82f6";
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!saved) {
+                        e.currentTarget.style.background = "#f8fafc";
+                        e.currentTarget.style.color = "#334155";
+                        e.currentTarget.style.borderColor = "#e2e8f0";
+                      }
+                    }}
                   >
                     <FaSave size={isMobile ? 14 : 16} /> {saved ? "Saved!" : "Save Report"}
                   </button>
@@ -706,14 +699,14 @@ const VoiceTestPage = () => {
                     gap: "8px",
                     transition: "all 0.2s"
                   }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = "#059669";
-                    e.currentTarget.style.color = "white";
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = "#f0fdf4";
-                    e.currentTarget.style.color = "#059669";
-                  }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = "#059669";
+                      e.currentTarget.style.color = "white";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = "#f0fdf4";
+                      e.currentTarget.style.color = "#059669";
+                    }}
                   >
                     <FaWhatsapp size={isMobile ? 14 : 16} /> Share Result
                   </button>
@@ -730,11 +723,11 @@ const VoiceTestPage = () => {
                 color: "#94a3b8"
               }}>
                 <FaHistory size={isMobile ? 36 : 48} style={{ marginBottom: "15px", opacity: 0.5 }} />
-                <h3 style={{ 
-                  color: "#64748b", 
-                  marginBottom: "8px", 
-                  fontWeight: "600", 
-                  fontSize: isMobile ? "1.1rem" : "1.25rem" 
+                <h3 style={{
+                  color: "#64748b",
+                  marginBottom: "8px",
+                  fontWeight: "600",
+                  fontSize: isMobile ? "1.1rem" : "1.25rem"
                 }}>
                   Results Will Appear Here
                 </h3>
@@ -766,42 +759,42 @@ const VoiceTestPage = () => {
           }}>
             <GiSoundWaves size={isMobile ? 18 : 24} /> About the Voice Test
           </h3>
-          <div style={{ 
-            display: "grid", 
-            gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(250px, 1fr))", 
-            gap: isMobile ? "20px" : "30px" 
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(250px, 1fr))",
+            gap: isMobile ? "20px" : "30px"
           }}>
             <div>
-              <h4 style={{ 
-                color: "#3b82f6", 
-                fontSize: isMobile ? "0.9rem" : "1rem", 
-                fontWeight: "600", 
-                marginBottom: "8px" 
+              <h4 style={{
+                color: "#3b82f6",
+                fontSize: isMobile ? "0.9rem" : "1rem",
+                fontWeight: "600",
+                marginBottom: "8px"
               }}>
                 How It Works
               </h4>
-              <p style={{ 
-                color: "#64748b", 
-                lineHeight: "1.6", 
-                fontSize: isMobile ? "0.85rem" : "0.95rem" 
+              <p style={{
+                color: "#64748b",
+                lineHeight: "1.6",
+                fontSize: isMobile ? "0.85rem" : "0.95rem"
               }}>
                 Voice analysis detects subtle changes in speech (tremor, volume, pauses) using AI to identify early Parkinson's indicators.
               </p>
             </div>
             <div>
-              <h4 style={{ 
-                color: "#3b82f6", 
-                fontSize: isMobile ? "0.9rem" : "1rem", 
-                fontWeight: "600", 
-                marginBottom: "8px" 
+              <h4 style={{
+                color: "#3b82f6",
+                fontSize: isMobile ? "0.9rem" : "1rem",
+                fontWeight: "600",
+                marginBottom: "8px"
               }}>
                 Instructions
               </h4>
-              <ul style={{ 
-                color: "#64748b", 
-                lineHeight: "1.6", 
-                fontSize: isMobile ? "0.85rem" : "0.95rem", 
-                paddingLeft: "18px" 
+              <ul style={{
+                color: "#64748b",
+                lineHeight: "1.6",
+                fontSize: isMobile ? "0.85rem" : "0.95rem",
+                paddingLeft: "18px"
               }}>
                 <li>Speak clearly for 10–20 seconds (e.g., read a sentence)</li>
                 <li>Use a quiet environment</li>
@@ -810,18 +803,18 @@ const VoiceTestPage = () => {
               </ul>
             </div>
             <div>
-              <h4 style={{ 
-                color: "#3b82f6", 
-                fontSize: isMobile ? "0.9rem" : "1rem", 
-                fontWeight: "600", 
-                marginBottom: "8px" 
+              <h4 style={{
+                color: "#3b82f6",
+                fontSize: isMobile ? "0.9rem" : "1rem",
+                fontWeight: "600",
+                marginBottom: "8px"
               }}>
                 Disclaimer
               </h4>
-              <p style={{ 
-                color: "#64748b", 
-                lineHeight: "1.6", 
-                fontSize: isMobile ? "0.85rem" : "0.95rem" 
+              <p style={{
+                color: "#64748b",
+                lineHeight: "1.6",
+                fontSize: isMobile ? "0.85rem" : "0.95rem"
               }}>
                 This is a preliminary screening tool only. Always consult a healthcare professional for diagnosis.
               </p>
