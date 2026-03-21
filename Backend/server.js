@@ -35,6 +35,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB Error:', err));
 
 // Routes
+app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/assessments', require('./routes/assessmentRoutes'));
 app.use('/api/recommendations', require('./routes/recommendationRoutes'));
 app.use('/api/spiral', require('./routes/spiralRoutes'));

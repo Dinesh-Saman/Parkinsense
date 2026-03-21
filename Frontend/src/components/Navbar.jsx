@@ -1,16 +1,20 @@
 // src/components/Navbar.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaBars, FaTimes, FaBrain, FaHome, FaStethoscope, FaDrawPolygon, FaMicrophone, FaInfoCircle, FaEnvelope } from "react-icons/fa";
+import { FaBars, FaTimes, FaBrain, FaHome, FaStethoscope, FaDrawPolygon, FaMicrophone, FaInfoCircle, FaEnvelope, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Navbar.css";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const location = useLocation();
   const { t, i18n } = useTranslation();
+  const { user, logout, openAuthModal } = useAuth();
   const langDropdownRef = useRef(null);
+  const profileMenuRef = useRef(null);
   const menuRef = useRef(null);
 
   const toggleMenu = () => {
@@ -43,6 +47,9 @@ const Navbar = () => {
       if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
         setLangOpen(false);
       }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
       if (menuRef.current && !menuRef.current.contains(event.target) && 
           !event.target.closest('.menu-toggle')) {
         closeMenu();
@@ -70,15 +77,21 @@ const Navbar = () => {
     </svg>
   );
 
-  // Menu items with icons
-  const menuItems = [
-    { path: "/", icon: <FaHome />, label: t("home") },
-    { path: "/about-us", icon: <FaInfoCircle />, label: t("about") },
-    { path: "/diagnostic", icon: <FaStethoscope />, label: t("diagnostic") },
-    { path: "/spiral-test", icon: <FaDrawPolygon />, label: t("spiral_test") || "Spiral Test" },
-    { path: "/voice-analysis", icon: <FaMicrophone />, label: t("voice_analysis") || "Voice Analysis" },
-    { path: "/contact-us", icon: <FaEnvelope />, label: t("contact") },
+  // Menu items with roles
+  const allMenuItems = [
+    { path: "/", icon: <FaHome />, label: t("home"), roles: ['all'] },
+    { path: "/about-us", icon: <FaInfoCircle />, label: t("about"), roles: ['all'] },
+    { path: "/diagnostic", icon: <FaStethoscope />, label: t("diagnostic"), roles: ['doctor'] },
+    { path: "/spiral-test", icon: <FaDrawPolygon />, label: t("spiral_test") || "Spiral Test", roles: ['doctor', 'patient'] },
+    { path: "/voice-analysis", icon: <FaMicrophone />, label: t("voice_analysis") || "Voice Analysis", roles: ['doctor', 'patient'] },
+    { path: "/contact-us", icon: <FaEnvelope />, label: t("contact"), roles: ['all'] },
   ];
+
+  const menuItems = allMenuItems.filter(item => {
+    if (item.roles.includes('all')) return true;
+    if (!user) return false;
+    return item.roles.includes(user.role);
+  });
 
   return (
     <>
@@ -157,6 +170,50 @@ const Navbar = () => {
               )}
             </div>
 
+            {/* Auth Button */}
+            <div className="navbar-auth-desktop">
+              {user ? (
+                <div className="nav-profile-container" ref={profileMenuRef}>
+                  <button 
+                    className="nav-profile-trigger" 
+                    onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                    title={user.name}
+                  >
+                    {user.picture ? (
+                      <img src={user.picture} alt={user.name} className="nav-profile-pic" referrerPolicy="no-referrer" />
+                    ) : (
+                      <div className="nav-profile-placeholder">
+                        {user.name ? user.name.charAt(0).toUpperCase() : <FaUserCircle size={24} />}
+                      </div>
+                    )}
+                    <span className="nav-profile-name">{user.name}</span>
+                  </button>
+                  
+                  {profileMenuOpen && (
+                    <div className="nav-profile-dropdown">
+                      <div className="nav-profile-header">
+                        <span className="nav-profile-dropdown-name">{user.name}</span>
+                        <span className="nav-profile-dropdown-role">{user.role}</span>
+                      </div>
+                      <button 
+                        onClick={() => { logout(); setProfileMenuOpen(false); }} 
+                        className="nav-profile-logout-btn"
+                      >
+                        <FaSignOutAlt /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button 
+                  onClick={openAuthModal}
+                  className="btn-auth btn-auth-primary"
+                >
+                  <FaUserCircle /> Login
+                </button>
+              )}
+            </div>
+
             {/* Mobile Menu Toggle - Hidden on desktop */}
             <button
               className="menu-toggle"
@@ -196,6 +253,25 @@ const Navbar = () => {
                 </Link>
               </li>
             ))}
+            
+            {/* Mobile Auth Button */}
+            <li className="mobile-auth-container">
+              {user ? (
+                <button 
+                  onClick={() => { logout(); closeMenu(); }}
+                  className="btn-mobile-auth btn-mobile-auth-outline"
+                >
+                  <FaSignOutAlt /> Logout ({user.name})
+                </button>
+              ) : (
+                <button 
+                  onClick={() => { openAuthModal(); closeMenu(); }}
+                  className="btn-mobile-auth btn-mobile-auth-primary"
+                >
+                  <FaUserCircle /> Login / Register
+                </button>
+              )}
+            </li>
           </ul>
 
           <div className="mobile-menu-footer">
@@ -241,6 +317,184 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+      <style>{`
+        .navbar-auth-desktop {
+          display: none;
+          margin-left: 16px;
+        }
+        @media (min-width: 768px) {
+          .navbar-auth-desktop {
+            display: flex;
+          }
+        }
+        .btn-auth {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-weight: 500;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: none;
+        }
+        .btn-auth-primary {
+          background: linear-gradient(to right, #6366f1, #9333ea);
+          color: white;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn-auth-primary:hover {
+          background: linear-gradient(to right, #4f46e5, #7e22ce);
+        }
+        .btn-auth-outline {
+          background: white;
+          color: #4f46e5;
+          border: 1px solid #4f46e5;
+        }
+        .btn-auth-outline:hover {
+          background: #e0e7ff;
+        }
+        
+        .mobile-auth-container {
+          margin-top: 16px;
+          border-top: 1px solid #f3f4f6;
+          padding-top: 16px;
+        }
+        .btn-mobile-auth {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 12px 16px;
+          border-radius: 12px;
+          font-weight: 500;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: none;
+        }
+        .btn-mobile-auth-primary {
+          background: linear-gradient(to right, #6366f1, #9333ea);
+          color: white;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn-mobile-auth-outline {
+          background: #f3f4f6;
+          color: #374151;
+        }
+
+        /* Profile Dropdown Styles */
+        .nav-profile-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .nav-profile-trigger {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: linear-gradient(to right, #6366f1, #9333ea);
+          color: white;
+          border: 1px solid transparent;
+          padding: 6px 14px 6px 6px;
+          border-radius: 999px;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-profile-trigger:hover {
+          background: linear-gradient(to right, #4f46e5, #7e22ce);
+          border-color: transparent;
+          transform: translateY(-1px);
+        }
+
+        .nav-profile-pic, .nav-profile-placeholder {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        .nav-profile-placeholder {
+          background: linear-gradient(135deg, #6366f1, #a855f7);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 14px;
+        }
+
+        .nav-profile-name {
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: white;
+        }
+
+        .nav-profile-dropdown {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+          border: 1px solid #f3f4f6;
+          min-width: 200px;
+          overflow: hidden;
+          z-index: 50;
+          animation: fade-in-down 0.2s ease-out;
+        }
+
+        .nav-profile-header {
+          padding: 16px;
+          border-bottom: 1px solid #f3f4f6;
+          background: #f9fafb;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .nav-profile-dropdown-name {
+          font-weight: 700;
+          color: #111827;
+          font-size: 0.95rem;
+        }
+
+        .nav-profile-dropdown-role {
+          font-size: 0.75rem;
+          color: #6b7280;
+          text-transform: capitalize;
+          margin-top: 2px;
+        }
+
+        .nav-profile-logout-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: white;
+          border: none;
+          color: #ef4444;
+          font-weight: 600;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: background 0.2s;
+          text-align: left;
+        }
+
+        .nav-profile-logout-btn:hover {
+          background: #fef2f2;
+        }
+
+        @keyframes fade-in-down {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </>
   );
 };
