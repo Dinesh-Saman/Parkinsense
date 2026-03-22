@@ -11,10 +11,10 @@ import os
 # ─────────────────────────────────────────────────────────────
 # Load trained model, scaler, and feature column order
 # ─────────────────────────────────────────────────────────────
-_MODEL_PATH   = "model/voice_uci_model.pkl"
-_SCALER_PATH  = "model/voice_scaler.pkl"
-_SELECTOR_PATH = "model/voice_selector.pkl"
-_COLUMNS_PATH = "model/voice_feature_columns.pkl"
+_MODEL_PATH   = "voice/model/voice_uci_model.pkl"
+_SCALER_PATH  = "voice/model/voice_scaler.pkl"
+_SELECTOR_PATH = "voice/model/voice_selector.pkl"
+_COLUMNS_PATH = "voice/model/voice_feature_columns.pkl"
 
 _model    = None
 _scaler   = None
@@ -50,7 +50,7 @@ def predict_voice(audio_content: bytes) -> dict:
         _load_artifacts()
 
         # Extract 71 biomedical voice features from the audio
-        from extract_voice_features import extract_features_from_audio, UCI_FEATURE_NAMES
+        from voice.extract_voice_features import extract_features_from_audio, UCI_FEATURE_NAMES
         features = extract_features_from_audio(audio_content)  # shape (71,)
 
         # Scale, Select Top Features, and Predict

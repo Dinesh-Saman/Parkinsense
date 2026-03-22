@@ -5,7 +5,7 @@ from PIL import Image
 import torch
 from torchvision import transforms, models
 import os
-from voice_predict import predict_voice
+from voice.voice_predict import predict_voice
 
 app = Flask(__name__)
 CORS(app)   # ← THIS ALLOWS REACT TO CONNECT!
@@ -13,7 +13,7 @@ CORS(app)   # ← THIS ALLOWS REACT TO CONNECT!
 # Load model
 model = models.resnet18(pretrained=False)
 model.fc = torch.nn.Linear(model.fc.in_features, 1)
-model_path = "model/best_spiral_model.pth"
+model_path = "spiral/model/best_spiral_model.pth"
 model.load_state_dict(torch.load(model_path, map_location="cpu"))
 model.eval()
 

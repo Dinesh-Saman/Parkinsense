@@ -694,11 +694,6 @@ const Footer = () => {
               <p className="parkinsense-copyright">
                 © 2025 ParkinSense. Made with <Heart className="parkinsense-heart-icon" size={14} fill="#ec4899" /> in Sri Lanka
               </p>
-              <div className="parkinsense-bottom-links">
-                <a href="#" className="parkinsense-bottom-link">Privacy Policy</a>
-                <a href="#" className="parkinsense-bottom-link">Terms of Service</a>
-                <a href="#" className="parkinsense-bottom-link">Cookie Policy</a>
-              </div>
             </div>
 
             <div className="parkinsense-disclaimer">
