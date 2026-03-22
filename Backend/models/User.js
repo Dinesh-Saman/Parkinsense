@@ -12,7 +12,12 @@ const userSchema = new mongoose.Schema({
   // Doctor fields
   specialization: { type: String },
   license:        { type: String },
+  slmcNumber:     { type: String },
+  // Reset password fields
+  resetPasswordToken:   { type: String },
+  resetPasswordExpires: { type: Date },
 }, { timestamps: true });
+
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

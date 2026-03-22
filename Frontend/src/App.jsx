@@ -1,15 +1,41 @@
 // src/App.jsx
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import AssessmentForm from "./components/MDS-UPDRS/AssessmentForm";
 import RecommendationPage from "./components/Recommendation/RecommendationPage";
 import Home from "./pages/Home";
+
+// Helper component to handle scrolling to hash fragments
+const ScrollToHash = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.getElementById(location.hash.substring(1));
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [location]);
+
+  return null;
+};
 import SpiralTestPage from "./pages/SpiralTestPage";
 import VoiceTestPage from "./pages/VoiceTestPage";
 import ContactUs from "./pages/Contact";
 import AboutUs from "./pages/AboutUs";
+import ResetPassword from "./pages/ResetPassword";
+import UnderstandingParkinsons from "./pages/blog-posts/UnderstandingParkinsons";
+import EarlyDetection from "./pages/blog-posts/EarlyDetection";
+import ScreeningTechniques from "./pages/blog-posts/ScreeningTechniques";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AuthModal from "./components/AuthModal";
+import EditProfileModal from "./components/EditProfileModal";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -30,9 +56,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 const AppContent = () => {
   return (
     <Router>
+      <ScrollToHash />
       <Navbar />
       <AuthModal />
-      <div className="pt-16 min-h-screen bg-gradient-to-br from-cyan-50 to-teal-50">
+      <EditProfileModal />
+      <div className="pt-16 min-h-screen">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/contact-us" element={<ContactUs />} />
@@ -73,6 +101,12 @@ const AppContent = () => {
               </ProtectedRoute>
             } 
           />
+          <Route path="/reset-password/:token" element={<><Home /><ResetPassword /></>} />
+          
+          {/* Blog/Info Pages */}
+          <Route path="/blog/understanding-parkinsons" element={<UnderstandingParkinsons />} />
+          <Route path="/blog/early-detection" element={<EarlyDetection />} />
+          <Route path="/blog/screening-techniques" element={<ScreeningTechniques />} />
         </Routes>
       </div>
     </Router>

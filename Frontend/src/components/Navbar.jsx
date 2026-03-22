@@ -1,19 +1,15 @@
 // src/components/Navbar.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaBars, FaTimes, FaBrain, FaHome, FaStethoscope, FaDrawPolygon, FaMicrophone, FaInfoCircle, FaEnvelope, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
-import { useTranslation } from "react-i18next";
+import { FaBars, FaTimes, FaBrain, FaHome, FaStethoscope, FaDrawPolygon, FaMicrophone, FaInfoCircle, FaEnvelope, FaUserCircle, FaSignOutAlt, FaUserEdit } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import "../styles/Navbar.css";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const location = useLocation();
-  const { t, i18n } = useTranslation();
-  const { user, logout, openAuthModal } = useAuth();
-  const langDropdownRef = useRef(null);
+  const { user, logout, openAuthModal, openEditProfileModal } = useAuth();
   const profileMenuRef = useRef(null);
   const menuRef = useRef(null);
 
@@ -26,27 +22,17 @@ const Navbar = () => {
     }
   };
 
-  const toggleLang = () => setLangOpen(!langOpen);
-  
   const closeMenu = () => {
     setMenuOpen(false);
     document.body.style.overflow = 'auto';
   };
 
-  const changeLang = (lng) => {
-    i18n.changeLanguage(lng);
-    setLangOpen(false);
-    closeMenu();
-  };
 
   const isActive = (path) => location.pathname === path;
 
   // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
-        setLangOpen(false);
-      }
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setProfileMenuOpen(false);
       }
@@ -63,28 +49,14 @@ const Navbar = () => {
     };
   }, []);
 
-  // Custom Globe Icon
-  const GlobeIcon = () => (
-    <svg
-      className="globe-icon-svg"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="24"
-      height="24"
-      fill="currentColor"
-    >
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
-    </svg>
-  );
 
-  // Menu items with roles
   const allMenuItems = [
-    { path: "/", icon: <FaHome />, label: t("home"), roles: ['all'] },
-    { path: "/about-us", icon: <FaInfoCircle />, label: t("about"), roles: ['all'] },
-    { path: "/diagnostic", icon: <FaStethoscope />, label: t("diagnostic"), roles: ['doctor'] },
-    { path: "/spiral-test", icon: <FaDrawPolygon />, label: t("spiral_test") || "Spiral Test", roles: ['doctor', 'patient'] },
-    { path: "/voice-analysis", icon: <FaMicrophone />, label: t("voice_analysis") || "Voice Analysis", roles: ['doctor', 'patient'] },
-    { path: "/contact-us", icon: <FaEnvelope />, label: t("contact"), roles: ['all'] },
+    { path: "/", icon: <FaHome />, label: "Home", roles: ['all'] },
+    { path: "/about-us", icon: <FaInfoCircle />, label: "About Us", roles: ['all'] },
+    { path: "/diagnostic", icon: <FaStethoscope />, label: "Diagnostic", roles: ['doctor'] },
+    { path: "/spiral-test", icon: <FaDrawPolygon />, label: "Spiral Test", roles: ['doctor', 'patient'] },
+    { path: "/voice-analysis", icon: <FaMicrophone />, label: "Voice Analysis", roles: ['doctor', 'patient'] },
+    { path: "/contact-us", icon: <FaEnvelope />, label: "Contact Us", roles: ['all'] },
   ];
 
   const menuItems = allMenuItems.filter(item => {
@@ -118,57 +90,6 @@ const Navbar = () => {
 
           {/* Right-side Icons */}
           <div className="navbar-icons">
-            {/* Language Selector */}
-            <div className="language-selector" ref={langDropdownRef}>
-              <button
-                onClick={toggleLang}
-                className="globe-button"
-                aria-label="Change language"
-                aria-expanded={langOpen}
-                title="Select Language"
-              >
-                <GlobeIcon />
-                <span className="current-lang">{i18n.language.toUpperCase()}</span>
-              </button>
-              
-              {/* Language Popup */}
-              {langOpen && (
-                <div className="language-popup">
-                  <div className="language-options">
-                    <button
-                      onClick={() => changeLang("en")}
-                      className={`language-option ${i18n.language === "en" ? "selected" : ""}`}
-                    >
-                      <span className="language-flag">🌐</span>
-                      <span className="language-details">
-                        <span className="language-name">English</span>
-                        <span className="language-native">English</span>
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => changeLang("si")}
-                      className={`language-option ${i18n.language === "si" ? "selected" : ""}`}
-                    >
-                      <span className="language-flag">🇱🇰</span>
-                      <span className="language-details">
-                        <span className="language-name">සිංහල</span>
-                        <span className="language-native">Sinhala</span>
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => changeLang("ta")}
-                      className={`language-option ${i18n.language === "ta" ? "selected" : ""}`}
-                    >
-                      <span className="language-flag">🇮🇳</span>
-                      <span className="language-details">
-                        <span className="language-name">தமிழ்</span>
-                        <span className="language-native">Tamil</span>
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* Auth Button */}
             <div className="navbar-auth-desktop">
@@ -195,12 +116,20 @@ const Navbar = () => {
                         <span className="nav-profile-dropdown-name">{user.name}</span>
                         <span className="nav-profile-dropdown-role">{user.role}</span>
                       </div>
-                      <button 
-                        onClick={() => { logout(); setProfileMenuOpen(false); }} 
-                        className="nav-profile-logout-btn"
-                      >
-                        <FaSignOutAlt /> Logout
-                      </button>
+                      <div className="nav-profile-menu-items">
+                        <button 
+                          onClick={() => { openEditProfileModal(); setProfileMenuOpen(false); }} 
+                          className="nav-profile-menu-btn"
+                        >
+                          <FaUserEdit /> Edit Profile
+                        </button>
+                        <button 
+                          onClick={() => { logout(); setProfileMenuOpen(false); }} 
+                          className="nav-profile-logout-btn"
+                        >
+                          <FaSignOutAlt /> Logout
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -275,41 +204,6 @@ const Navbar = () => {
           </ul>
 
           <div className="mobile-menu-footer">
-            <div className="mobile-language-selector">
-              <h3 className="mobile-language-title">Select Language</h3>
-              <div className="mobile-language-options">
-                <button
-                  onClick={() => changeLang("en")}
-                  className={`mobile-language-option ${i18n.language === "en" ? "selected" : ""}`}
-                >
-                  <span className="mobile-language-flag">🌐</span>
-                  <span className="mobile-language-info">
-                    <span className="mobile-language-name">English</span>
-                    <span className="mobile-language-code">EN</span>
-                  </span>
-                </button>
-                <button
-                  onClick={() => changeLang("si")}
-                  className={`mobile-language-option ${i18n.language === "si" ? "selected" : ""}`}
-                >
-                  <span className="mobile-language-flag">🇱🇰</span>
-                  <span className="mobile-language-info">
-                    <span className="mobile-language-name">සිංහල</span>
-                    <span className="mobile-language-code">SI</span>
-                  </span>
-                </button>
-                <button
-                  onClick={() => changeLang("ta")}
-                  className={`mobile-language-option ${i18n.language === "ta" ? "selected" : ""}`}
-                >
-                  <span className="mobile-language-flag">🇮🇳</span>
-                  <span className="mobile-language-info">
-                    <span className="mobile-language-name">தமிழ்</span>
-                    <span className="mobile-language-code">TA</span>
-                  </span>
-                </button>
-              </div>
-            </div>
             
             <div className="mobile-menu-copyright">
               © {new Date().getFullYear()} ParkinSense. All rights reserved.
@@ -470,20 +364,32 @@ const Navbar = () => {
           margin-top: 2px;
         }
 
-        .nav-profile-logout-btn {
+        .nav-profile-menu-btn, .nav-profile-logout-btn {
           width: 100%;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 12px;
           padding: 12px 16px;
           background: white;
           border: none;
-          color: #ef4444;
           font-weight: 600;
           font-size: 0.9rem;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: all 0.2s;
           text-align: left;
+        }
+
+        .nav-profile-menu-btn {
+          color: #1e293b;
+        }
+
+        .nav-profile-menu-btn:hover {
+          background: #f1f5f9;
+        }
+
+        .nav-profile-logout-btn {
+          color: #ef4444;
+          border-top: 1px solid #f3f4f6;
         }
 
         .nav-profile-logout-btn:hover {

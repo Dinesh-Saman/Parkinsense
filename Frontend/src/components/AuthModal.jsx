@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { FaTimes, FaBrain, FaEye, FaEyeSlash, FaUser, FaUserMd } from "react-icons/fa";
 import { useGoogleLogin } from '@react-oauth/google';
@@ -7,7 +7,7 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const AuthModal = () => {
   const { isAuthModalOpen, closeAuthModal, login } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const [authView, setAuthView] = useState("login"); // "login", "signup", "forgotPassword"
   const [role, setRole] = useState("patient");
 
   // UI state
@@ -16,51 +16,19 @@ const AuthModal = () => {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  // Form state
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [specialization, setSpecialization] = useState("");
-  const [license, setLicense] = useState("");
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  // Helper: validate email
+  const validateEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+  };
 
-  // Google Sign In
-  const handleGoogleSignIn = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        const userInfo = await userInfoRes.json();
-        login(
-          {
-            id: userInfo.sub,
-            name: userInfo.name || "Google User",
-            email: userInfo.email,
-            role: "patient",
-            picture: userInfo.picture,
-          },
-          null
-        );
-        closeAuthModal();
-      } catch (err) {
-        console.error("Failed to fetch google user info", err);
-        setError("Google sign-in failed. Please try again.");
-      }
-    },
-    onError: () => setError("Google sign-in failed. Please try again."),
-  });
-
-  if (!isAuthModalOpen) return null;
-
-  const resetForm = () => {
+  const resetFormData = () => {
     setEmail("");
     setPassword("");
     setName("");
     setSpecialization("");
-    setLicense("");
+    setSlmcNumber("");
     setAge("");
     setGender("");
     setShowPassword(false);
@@ -70,14 +38,131 @@ const AuthModal = () => {
     setSuccessMsg("");
   };
 
+  // Body Scroll Lock & Reset Form on Open
+  useEffect(() => {
+    if (isAuthModalOpen) {
+      resetFormData();
+      setAuthView("login");
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isAuthModalOpen]);
+
+  // Form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [slmcNumber, setSlmcNumber] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+
+
+  // Google Sign In (Logic: checks if user exists, else redirects to signup)
+  const handleGoogleSignIn = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      setError("");
+      setSuccessMsg("");
+      try {
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const userInfo = await userInfoRes.json();
+        const googleEmail = (userInfo.email || "").toLowerCase();
+        const googleName = userInfo.name || "";
+
+        // Check if user exists on our backend
+        console.log('Sending social-login request for:', googleEmail);
+        const socialRes = await fetch(`${API}/auth/social-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: googleEmail }),
+        });
+
+        console.log('Social login response status:', socialRes.status);
+        if (socialRes.ok) {
+          // USER EXISTS: Log them in directly
+          const data = await socialRes.json();
+          console.log('User found! Logging in directly...');
+          setLoading(false);
+          closeAuthModal();
+          login(data.user, data.token, true); // Keep them logged in by default with google
+          return;
+        }
+
+        // USER DOES NOT EXIST or 404: Redirect to signup with pre-filled info
+        console.log('Social login failed (404), redirecting to signup view...');
+        setLoading(false);
+        setName(googleName);
+        setEmail(googleEmail);
+        setAuthView("signup");
+        setSuccessMsg("Google account linked! Please choose your role and complete registration.");
+
+      } catch (err) {
+        setLoading(false);
+        console.error("Failed to handle google sign-in", err);
+        setError("Google sign-in failed. Please try again.");
+      }
+    },
+    onError: () => setError("Google sign-in failed. Please try again."),
+  });
+
+  if (!isAuthModalOpen) return null;
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMsg("");
+    
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setError(data.message || "Failed to send reset link.");
+      } else {
+        setSuccessMsg(data.message);
+      }
+    } catch (err) {
+      setError("Something went wrong. Please check your connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccessMsg("");
+
+    if (!validateEmail(email)) {
+        setError("Please enter a valid email address.");
+        return;
+    }
+
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (authView === "login") {
         // ── SIGN IN ──────────────────────────────────────
         const res = await fetch(`${API}/auth/login`, {
           method: "POST",
@@ -85,14 +170,24 @@ const AuthModal = () => {
           body: JSON.stringify({ email, password }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Login failed.");
-        login(data.user, data.token);
+        
+        if (!res.ok) {
+          setLoading(false);
+          setError(data.message || "Login failed.");
+          return;
+        }
+        
+        // Success
+        setLoading(false);
+        closeAuthModal();
+        login(data.user, data.token, keepLoggedIn);
+        return;
 
-      } else {
+      } else if (authView === "signup") {
         // ── SIGN UP ───────────────────────────────────────
         const body = { name, email, password, role };
         if (role === "patient") { body.age = age; body.gender = gender; }
-        if (role === "doctor")  { body.specialization = specialization; body.license = license; }
+        if (role === "doctor")  { body.specialization = specialization; body.slmcNumber = slmcNumber; }
 
         const res = await fetch(`${API}/auth/register`, {
           method: "POST",
@@ -100,23 +195,30 @@ const AuthModal = () => {
           body: JSON.stringify(body),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Registration failed.");
+        
+        if (!res.ok) {
+          setLoading(false);
+          setError(data.message || "Registration failed.");
+          return;
+        }
 
+        setLoading(false);
         setSuccessMsg("Account created! Please sign in.");
-        resetForm();
-        setIsLogin(true); // switch to Sign In view
+        resetFormData();
+        setAuthView("login"); // switch to Sign In view
       }
     } catch (err) {
-      setError(err.message);
-    } finally {
       setLoading(false);
+      setError("Something went wrong. Please check your connection.");
+      console.error(err);
     }
   };
 
   const toggleMode = () => {
-    resetForm();
-    setIsLogin(!isLogin);
+    resetFormData();
+    setAuthView(authView === "login" ? "signup" : "login");
   };
+
 
 
   return (
@@ -137,10 +239,12 @@ const AuthModal = () => {
             </button>
           </div>
 
-          <h1 className="ps-title">{isLogin ? "Sign In" : "Sign Up"}</h1>
+          <h1 className="ps-title">
+            {authView === "forgotPassword" ? "Reset Password" : authView === "login" ? "Sign In" : "Sign Up"}
+          </h1>
 
           {/* Registration Role Toggle */}
-          {!isLogin && (
+          {authView === "signup" && (
             <div className="ps-role-tabs">
                <button 
                   type="button" 
@@ -160,7 +264,7 @@ const AuthModal = () => {
           )}
 
           {/* Google Mock */}
-          {isLogin && (
+          {authView === "login" && (
             <>
               <button type="button" className="ps-google-btn" onClick={handleGoogleSignIn}>
                 <svg className="google-icon" viewBox="0 0 24 24">
@@ -180,9 +284,20 @@ const AuthModal = () => {
             </>
           )}
 
-          <form className="ps-form" onSubmit={handleSubmit}>
+          <form className="ps-form" onSubmit={authView === "forgotPassword" ? handleForgotPassword : handleSubmit}>
             
-            {isLogin ? (
+            {authView === "forgotPassword" ? (
+              <div className="ps-input-group">
+                <label>Email Address</label>
+                <input 
+                  type="email" 
+                  required 
+                  placeholder="Enter your registered email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            ) : authView === "login" ? (
               <div className="ps-input-group">
                 <label>Username / Email</label>
                 <input 
@@ -218,28 +333,30 @@ const AuthModal = () => {
               </div>
             )}
 
-            <div className="ps-input-group">
-              <label>Password</label>
-              <div className="ps-password-wrapper">
-                <input 
-                  type={showPassword ? "text" : "password"}
-                  required 
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button 
-                  type="button" 
-                  className="ps-eye-btn" 
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
+            {authView !== "forgotPassword" && (
+              <div className="ps-input-group">
+                <label>Password</label>
+                <div className="ps-password-wrapper">
+                  <input 
+                    type={showPassword ? "text" : "password"}
+                    required 
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button 
+                    type="button" 
+                    className="ps-eye-btn" 
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Extra Patient Fields */}
-            {!isLogin && role === "patient" && (
+            {authView === "signup" && role === "patient" && (
               <div className="ps-form-row">
                 <div className="ps-input-group">
                   <label>Age</label>
@@ -269,7 +386,7 @@ const AuthModal = () => {
             )}
 
             {/* Extra Doctor Fields on Single Row */}
-            {!isLogin && role === "doctor" && (
+            {authView === "signup" && role === "doctor" && (
               <div className="ps-form-row">
                 <div className="ps-input-group">
                   <label>Specialization</label>
@@ -355,19 +472,19 @@ const AuthModal = () => {
                   </select>
                 </div>
                 <div className="ps-input-group">
-                  <label>Medical License</label>
+                  <label>SLMC Number</label>
                   <input 
                     type="text" 
                     required 
-                    placeholder="e.g. MC-12345"
-                    value={license}
-                    onChange={(e) => setLicense(e.target.value)}
+                    placeholder="e.g. 123456"
+                    value={slmcNumber}
+                    onChange={(e) => setSlmcNumber(e.target.value)}
                   />
                 </div>
               </div>
             )}
 
-            {isLogin && (
+            {authView === "login" && (
               <div className="ps-form-actions">
                 <label className="ps-checkbox-label">
                   <input 
@@ -377,50 +494,81 @@ const AuthModal = () => {
                   />
                   <span>Keep me logged in</span>
                 </label>
-                <button type="button" className="ps-forgot-link">Forget your password?</button>
+                <button 
+                  type="button" 
+                  className="ps-forgot-link"
+                  onClick={() => setAuthView("forgotPassword")}
+                >
+                  Forget your password?
+                </button>
               </div>
             )}
 
-            {/* Error / Success banners */}
-            {error      && <div className="ps-alert ps-alert-error">{error}</div>}
-            {successMsg && <div className="ps-alert ps-alert-success">{successMsg}</div>}
+            {/* Error / Success banners (Fixed height to prevent layout shift) */}
+            <div className="ps-alert-wrapper">
+              {error      && <div className="ps-alert ps-alert-error">{error}</div>}
+              {successMsg && <div className="ps-alert ps-alert-success">{successMsg}</div>}
+            </div>
 
             <button type="submit" className="ps-submit-btn" disabled={loading}>
               {loading
                 ? "Please wait…"
-                : isLogin
-                  ? "Login"
-                  : `Register as ${role === 'doctor' ? 'Doctor' : 'Patient'}`}
+                : authView === "forgotPassword"
+                  ? "Send Reset Link"
+                  : authView === "login"
+                    ? "Login"
+                    : `Register as ${role === 'doctor' ? 'Doctor' : 'Patient'}`}
             </button>
           </form>
 
           <div className="ps-toggle-prompt">
-            {isLogin ? "Haven't sign up yet?" : "Already have an account?"} 
-            <button onClick={toggleMode} className="ps-toggle-btn">
-              {isLogin ? "Sign up" : "Sign in"}
-            </button>
+            {authView === "forgotPassword" ? (
+              <button onClick={() => setAuthView("login")} className="ps-toggle-btn">
+                Back to Sign in
+              </button>
+            ) : (
+              <>
+                {authView === "login" ? "Haven't sign up yet?" : "Already have an account?"} 
+                <button onClick={toggleMode} className="ps-toggle-btn">
+                  {authView === "login" ? "Sign up" : "Sign in"}
+                </button>
+              </>
+            )}
           </div>
 
         </div>
 
         {/* Right Side: Illustration Area (White) */}
-        <div className="ps-auth-right">
-          <button className="ps-close-main" onClick={closeAuthModal}>
+        {authView !== "forgotPassword" && (
+          <div className="ps-auth-right">
+            <button className="ps-close-main" onClick={closeAuthModal}>
+              <FaTimes />
+            </button>
+            
+            <div className="ps-illustration-wrapper">
+               {/* Using the generated/provided illustration */}
+               <img 
+                 src={authView === "login" ? 
+                   "https://palmmedicalcenters.com/wp-content/uploads/2025/09/A-senior-female-Patient-with-a-geriatric-doctor-in-a-medical-office.jpg" : 
+                   "https://vidhilegalpolicy.in/wp-content/uploads/2023/04/iStock-1418999473.jpg"
+                 } 
+                 alt={authView === "login" ? "Medical professional login illustration" : "Sign up illustration"} 
+                 className="ps-main-image" 
+               />
+            </div>
+          </div>
+        )}
+
+        {/* If forgotPassword, show Close button on the left area since right is hidden */}
+        {authView === "forgotPassword" && (
+          <button 
+            className="ps-close-main" 
+            onClick={closeAuthModal} 
+            style={{ position: 'absolute', top: '20px', right: '20px', color: 'white' }}
+          >
             <FaTimes />
           </button>
-          
-          <div className="ps-illustration-wrapper">
-             {/* Using the generated/provided illustration */}
-             <img 
-               src={isLogin ? 
-                 "https://palmmedicalcenters.com/wp-content/uploads/2025/09/A-senior-female-Patient-with-a-geriatric-doctor-in-a-medical-office.jpg" : 
-                 "https://vidhilegalpolicy.in/wp-content/uploads/2023/04/iStock-1418999473.jpg"
-               } 
-               alt={isLogin ? "Medical professional login illustration" : "Sign up illustration"} 
-               className="ps-main-image" 
-             />
-          </div>
-        </div>
+        )}
 
       </div>
 
@@ -449,12 +597,13 @@ const AuthModal = () => {
         .ps-auth-container {
           display: flex;
           width: 100%;
-          max-width: 900px;
+          max-width: ${authView === "forgotPassword" ? "450px" : "900px"};
           min-height: 420px;
           background-color: #ffffff;
           border-radius: 20px;
           overflow: hidden;
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+          position: relative;
         }
 
         /* LEFT SIDE */
@@ -548,7 +697,7 @@ const AuthModal = () => {
         .ps-form {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 8px; /* Tighter layout to compensate for alert wrapper */
         }
 
         .ps-input-group label {
@@ -667,16 +816,30 @@ const AuthModal = () => {
           cursor: not-allowed;
         }
 
+        .ps-alert-wrapper {
+          height: 42px; /* Reserved space for alerts */
+          margin-top: 2px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: visible;
+        }
+
         /* Alert banners */
         .ps-alert {
           width: 100%;
-          padding: 10px 16px;
-          border-radius: 10px;
-          font-size: 0.87rem;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 0.82rem;
           font-weight: 600;
           text-align: center;
           box-sizing: border-box;
-          animation: ps-fade-in 0.25s ease;
+          animation: ps-fade-in-alert 0.25s ease;
+        }
+
+        @keyframes ps-fade-in-alert {
+          from { opacity: 0; transform: translateY(-5px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .ps-alert-error {
           background-color: rgba(255, 80, 80, 0.2);

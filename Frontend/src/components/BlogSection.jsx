@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowRight, Clock, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const BlogSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -10,7 +11,7 @@ const BlogSection = () => {
       description:
         "Learn about the causes, symptoms, and early warning signs of Parkinson's Disease.",
       image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=800&q=80",
-      link: "#",
+      link: "/blog/understanding-parkinsons",
       readTime: "5 min read",
       date: "Oct 5, 2024",
       category: "Medical Education"
@@ -20,7 +21,7 @@ const BlogSection = () => {
       description:
         "Early detection can help manage symptoms and improve quality of life for patients.",
       image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
-      link: "#",
+      link: "/blog/early-detection",
       readTime: "4 min read",
       date: "Oct 3, 2024",
       category: "Prevention"
@@ -30,7 +31,7 @@ const BlogSection = () => {
       description:
         "Discover how voice analysis, spiral drawing, and questionnaires help detect Parkinson's.",
       image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",
-      link: "#",
+      link: "/blog/screening-techniques",
       readTime: "6 min read",
       date: "Oct 1, 2024",
       category: "Technology"
@@ -360,7 +361,7 @@ const BlogSection = () => {
         }
       `}</style>
 
-      <section className="blog-section">
+      <section id="blog-section" className="blog-section">
         <div className="blog-bg-pattern"></div>
         
         <div className="floating-shape floating-shape-1"></div>
@@ -404,10 +405,10 @@ const BlogSection = () => {
                   <h3>{blog.title}</h3>
                   <p>{blog.description}</p>
                   
-                  <a href={blog.link} className="blog-button">
+                  <Link to={blog.link} className="blog-button">
                     <span>Read More</span>
                     <ArrowRight className="blog-button-icon" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             ))}
