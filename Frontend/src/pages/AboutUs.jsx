@@ -106,12 +106,6 @@ const AboutPage = () => {
     }
   ];
 
-  const stats = [
-    { number: "95%", label: "Detection Accuracy", icon: <Target size={24} /> },
-    { number: "5,000+", label: "Screenings Completed", icon: <Users size={24} /> },
-    { number: "50+", label: "Medical Partners", icon: <Award size={24} /> },
-    { number: "24/7", label: "Accessibility", icon: <Clock size={24} /> }
-  ];
 
   // Handle image error
   const handleImageError = (e) => {
@@ -177,51 +171,6 @@ const AboutPage = () => {
           margin-bottom: 2rem;
         }
 
-        /* Stats Section */
-        .stats-section {
-          padding: 5rem 2rem;
-          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 2rem;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .stat-card {
-          background: white;
-          padding: 2.5rem 2rem;
-          border-radius: 20px;
-          text-align: center;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-          transition: all 0.3s ease;
-          border: 1px solid rgba(6, 182, 212, 0.1);
-        }
-
-        .stat-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-          border-color: rgba(6, 182, 212, 0.3);
-        }
-
-        .stat-number {
-          font-size: 3rem;
-          font-weight: 800;
-          background: linear-gradient(135deg, #06b6d4, #8b5cf6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-          font-size: 1.1rem;
-          color: #475569;
-          font-weight: 600;
-        }
 
         /* Mission/Story Section */
         .mission-section {
@@ -617,7 +566,6 @@ const AboutPage = () => {
 
         /* Responsive Design */
         @media (max-width: 1024px) {
-          .stats-grid,
           .values-grid {
             grid-template-columns: repeat(2, 1fr);
           }
@@ -636,7 +584,6 @@ const AboutPage = () => {
             font-size: 2.2rem;
           }
 
-          .stats-grid,
           .values-grid {
             grid-template-columns: 1fr;
           }
@@ -674,9 +621,6 @@ const AboutPage = () => {
             padding-left: 60px;
           }
 
-          .stat-number {
-            font-size: 2.5rem;
-          }
         }
 
         @media (max-width: 480px) {
@@ -746,17 +690,6 @@ const AboutPage = () => {
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="stats-section">
-          <div className="stats-grid">
-            {stats.map((stat, index) => (
-              <div key={index} className="stat-card fade-in-up" style={{animationDelay: `${index * 0.1}s`}}>
-                <div className="stat-number">{stat.number}</div>
-                <div className="stat-label">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* Mission/Story Section */}
         <section className="mission-section">

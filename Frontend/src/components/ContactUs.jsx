@@ -63,7 +63,7 @@ const ContactUs = () => {
     {
       icon: <MapPin size={24} />,
       title: "Location",
-      details: "No.98 Anandha Mawatha Kuliyapitiya",
+      details: "No.98, Anandha Mawatha Kuliyapitiya",
     },
     {
       icon: <Phone size={24} />,
@@ -478,9 +478,8 @@ const ContactUs = () => {
 
                   {status.message && (
                     <div
-                      className={`status-message ${
-                        status.type === "success" ? "status-success" : "status-error"
-                      }`}
+                      className={`status-message ${status.type === "success" ? "status-success" : "status-error"
+                        }`}
                     >
                       {status.message}
                     </div>

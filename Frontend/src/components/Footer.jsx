@@ -13,7 +13,7 @@ import { useAuth } from "../context/AuthContext";
 
 const Footer = () => {
   const { user } = useAuth();
-  
+
   const handleNavigation = (path) => {
     console.log(`Navigate to: ${path}`);
   };
@@ -594,7 +594,7 @@ const Footer = () => {
       <div className="parkinsense-footer-wrapper">
         <footer className="parkinsense-footer">
           <div className="parkinsense-footer-top-border"></div>
-          
+
           <div className="parkinsense-footer-main">
             {/* About Section */}
             <div className="parkinsense-footer-section">
@@ -630,20 +630,20 @@ const Footer = () => {
 
                 {/* Role-based Dynamic Links */}
                 {user && (
-                 <>
-                  <li>
-                    <button className="parkinsense-link-button" onClick={() => handleNavigation('/spiral-test')}>
-                      Spiral Test
-                    </button>
-                  </li>
-                  <li>
-                    <button className="parkinsense-link-button" onClick={() => handleNavigation('/voice-analysis')}>
-                      Voice Analysis
-                    </button>
-                  </li>
-                 </>
+                  <>
+                    <li>
+                      <button className="parkinsense-link-button" onClick={() => handleNavigation('/spiral-test')}>
+                        Spiral Test
+                      </button>
+                    </li>
+                    <li>
+                      <button className="parkinsense-link-button" onClick={() => handleNavigation('/voice-analysis')}>
+                        Voice Analysis
+                      </button>
+                    </li>
+                  </>
                 )}
-                
+
                 {user?.role === 'doctor' && (
                   <li>
                     <button className="parkinsense-link-button" onClick={() => handleNavigation('/diagnostic')}>
@@ -661,7 +661,7 @@ const Footer = () => {
                 <div className="parkinsense-contact-items">
                   <div className="parkinsense-contact-item">
                     <div className="parkinsense-contact-icon"><MapPin size={18} /></div>
-                    <span>No.98 Anandha Mawatha Kuliyapitiya</span>
+                    <span>No.98, Anandha Mawatha Kuliyapitiya</span>
                   </div>
                   <div className="parkinsense-contact-item">
                     <div className="parkinsense-contact-icon"><Phone size={18} /></div>

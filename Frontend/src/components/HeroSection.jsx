@@ -182,7 +182,8 @@ const HeroSection = () => {
             key={index}
             className={`hero-slide ${index === currentSlide ? 'active' : 'inactive'}`}
             style={{
-              backgroundImage: `url(${slide})`
+              backgroundImage: `url(${slide})`,
+              backgroundPosition: index === 4 ? 'center top' : 'center'
             }}
           />
         ))}
