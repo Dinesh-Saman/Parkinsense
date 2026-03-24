@@ -11,11 +11,20 @@ app = Flask(__name__)
 CORS(app)   # ← THIS ALLOWS REACT TO CONNECT!
 
 # Load model
-model = models.resnet18(pretrained=False)
+# Use weights=None to fix UserWarning and modern torchvision API
+model = models.resnet18(weights=None)
 model.fc = torch.nn.Linear(model.fc.in_features, 1)
-model_path = "spiral/model/best_spiral_model.pth"
-model.load_state_dict(torch.load(model_path, map_location="cpu"))
-model.eval()
+
+# Fix relative path for spiral model (mac-compatibility)
+_APP_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(_APP_DIR, "spiral", "model", "best_spiral_model.pth")
+
+if os.path.exists(model_path):
+    model.load_state_dict(torch.load(model_path, map_location="cpu"))
+    model.eval()
+    print(f"[app] Spiral model loaded from {model_path}")
+else:
+    print(f"⚠️ [app] Warning: Spiral model not found at {model_path}")
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),

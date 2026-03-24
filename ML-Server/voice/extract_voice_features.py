@@ -44,6 +44,12 @@ def extract_features_from_audio(audio_bytes: bytes) -> np.ndarray:
         
         print(f"Decoding audio: {len(audio_bytes)} bytes...")
         y_raw, sr_raw = librosa.load(raw_tmp, sr=22050, mono=True)
+        
+        # --- HARDENING: Sanitize audio before C++ calls (prevent segfaults) ---
+        y_raw = np.nan_to_num(y_raw).astype(np.float32)
+        if len(y_raw) < 1000:
+            raise ValueError("Audio stream is empty or too short.")
+        # -------------------------------------------------------------------
 
     except Exception as e:
         if raw_tmp and os.path.exists(raw_tmp):
@@ -92,9 +98,9 @@ def extract_features_from_audio(audio_bytes: bytes) -> np.ndarray:
         hnr = call(harmonicity, "Get mean", 0, 0)
         nhr = 1.0 / (10 ** (hnr / 10)) if hnr > 0 else 0.0
 
-        import librosa.feature
-
-        y_audio, sr = librosa.load(tmp_path, sr=None, mono=True)
+        # Reuse already loaded/written audio
+        y_audio = y_raw
+        sr = sr_raw
 
         if len(pitch_values) > 1:
             hist, _ = np.histogram(pitch_values, bins=20, density=True)
