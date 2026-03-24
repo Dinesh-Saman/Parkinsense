@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { FaTimes, FaBrain, FaEye, FaEyeSlash, FaUser, FaUserMd } from "react-icons/fa";
 import { useGoogleLogin } from '@react-oauth/google';
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:5002/api";
 
 const AuthModal = () => {
   const { isAuthModalOpen, closeAuthModal, login } = useAuth();

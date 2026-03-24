@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { FaTimes, FaUserEdit, FaBrain, FaUser, FaUserMd, FaCheckCircle } from "react-icons/fa";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:5002/api";
 
 const EditProfileModal = () => {
   const { user, token, isEditProfileModalOpen, closeEditProfileModal, updateProfile } = useAuth();
