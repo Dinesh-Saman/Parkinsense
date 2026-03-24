@@ -43,7 +43,10 @@ i18n.use(initReactI18next).init({
         confidence: "Confidence",
 
         // NEW: Voice Analysis (added)
-        voice_analysis: "Voice Analysis"
+        voice_analysis: "Voice Analysis",
+        voice_instruction: "Speak clearly for 15 seconds. Our AI will analyze your voice for Parkinson's indicators.",
+        voice_result_healthy: "Voice pattern appears normal and steady.",
+        voice_result_parkinson: "Voice analysis shows indicators of vocal tremor. Please consult a specialist."
       }
     },
 
@@ -84,7 +87,10 @@ i18n.use(initReactI18next).init({
         confidence: "විශ්වාසනීයත්වය",
 
         // NEW: Voice Analysis in Sinhala (added)
-        voice_analysis: "හඬ විශ්ලේෂණය"
+        voice_analysis: "හඬ විශ්ලේෂණය",
+        voice_instruction: "තත්පර 15 ක් පැහැදිලිව කතා කරන්න. අපගේ AI මගින් පාකින්සන් රෝග ලක්ෂණ සඳහා ඔබේ කටහඬ විශ්ලේෂණය කරනු ඇත.",
+        voice_result_healthy: "හඬ රටාව සාමාන්‍ය සහ ස්ථාවර බව පෙනේ.",
+        voice_result_parkinson: "හඬ විශ්ලේෂණයේදී කටහඬේ කම්පන ලක්ෂණ පෙන්වයි. කරුණාකර විශේෂඥවරයෙකු හමුවන්න."
       }
     },
 
@@ -125,7 +131,10 @@ i18n.use(initReactI18next).init({
         confidence: "நம்பிக்கை அளவு",
 
         // NEW: Voice Analysis in Tamil (added)
-        voice_analysis: "குரல் பகுப்பாய்வு"
+        voice_analysis: "குரல் பகுப்பாய்வு",
+        voice_instruction: "15 விநாடிகளுக்கு தெளிவாகப் பேசுங்கள். எங்கள் AI பார்கின்சன் அறிகுறிகளுக்காக உங்கள் குரலை பகுப்பாய்வு செய்யும்.",
+        voice_result_healthy: "குரல் அமைப்பு சாதாரணமாகவும் சீராகவும் உள்ளது.",
+        voice_result_parkinson: "குரல் பகுப்பாய்வு குரலில் நடுக்கத்தின் அறிகுறிகளைக் காட்டுகிறது. தயவுசெய்து ஒரு நிபுணரை அணுகவும்."
       }
     }
   },

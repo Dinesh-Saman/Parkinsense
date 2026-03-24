@@ -1,7 +1,10 @@
 flask==3.0.3
 flask-cors==5.0.0
-gunicorn==23.0.0
 pillow==10.4.0
+# PyTorch - use standard build for Mac (works on Intel + Apple Silicon)
+torch==2.5.0
+torchvision==0.20.0
+torchaudio==2.5.0
 # UCI voice pipeline
 ucimlrepo
 scikit-learn

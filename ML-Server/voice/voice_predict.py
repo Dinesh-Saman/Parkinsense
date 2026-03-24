@@ -10,11 +10,13 @@ import os
 
 # ─────────────────────────────────────────────────────────────
 # Load trained model, scaler, and feature column order
+# Use __file__-based paths so it works regardless of CWD (fixes Mac compatibility)
 # ─────────────────────────────────────────────────────────────
-_MODEL_PATH   = "voice/model/voice_uci_model.pkl"
-_SCALER_PATH  = "voice/model/voice_scaler.pkl"
-_SELECTOR_PATH = "voice/model/voice_selector.pkl"
-_COLUMNS_PATH = "voice/model/voice_feature_columns.pkl"
+_DIR = os.path.dirname(os.path.abspath(__file__))
+_MODEL_PATH    = os.path.join(_DIR, "model", "voice_uci_model.pkl")
+_SCALER_PATH   = os.path.join(_DIR, "model", "voice_scaler.pkl")
+_SELECTOR_PATH = os.path.join(_DIR, "model", "voice_selector.pkl")
+_COLUMNS_PATH  = os.path.join(_DIR, "model", "voice_feature_columns.pkl")
 
 _model    = None
 _scaler   = None

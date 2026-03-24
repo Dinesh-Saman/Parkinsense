@@ -228,7 +228,7 @@ const VoiceTestPage = () => {
             lineHeight: "1.6",
             padding: isMobile ? "0 10px" : "0"
           }}>
-            {t("Speak clearly for 15 seconds. Our AI will analyze your voice for Parkinson's indicators.")}
+            {t("voice_instruction")}
           </p>
         </div>
 
@@ -335,7 +335,7 @@ const VoiceTestPage = () => {
 
                   {!isRecording && (
                     <button
-                      onClick={() => speak(t("Speak clearly for 15 seconds. Our AI will analyze your voice for Parkinson's indicators."))}
+                      onClick={() => speak(t("voice_instruction"))}
                       style={{
                         marginTop: "15px",
                         padding: isMobile ? "8px 16px" : "10px 20px",
@@ -641,7 +641,7 @@ const VoiceTestPage = () => {
                     lineHeight: "1.6",
                     fontSize: isMobile ? "0.95rem" : "1.1rem"
                   }}>
-                    {result.hasParkinson ? t("result_parkinson") : t("result_healthy")}
+                    {result.hasParkinson ? t("voice_result_parkinson") : t("voice_result_healthy")}
                   </p>
                 </div>
 
