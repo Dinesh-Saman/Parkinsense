@@ -60,6 +60,7 @@ def predict_voice_route():
     result = predict_voice(audio_content)
     
     if "error" in result:
+        print(f"❌ [Voice API Error] {result['error']}")
         return jsonify(result), 500
         
     return jsonify(result)

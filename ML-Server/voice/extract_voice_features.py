@@ -38,10 +38,11 @@ def extract_features_from_audio(audio_bytes: bytes) -> np.ndarray:
 
     raw_tmp = None
     try:
-        with tempfile.NamedTemporaryFile(suffix=".audio", delete=False) as raw:
+        with tempfile.NamedTemporaryFile(suffix=".tmp", delete=False) as raw:
             raw.write(audio_bytes)
             raw_tmp = raw.name
-
+        
+        print(f"Decoding audio: {len(audio_bytes)} bytes...")
         y_raw, sr_raw = librosa.load(raw_tmp, sr=22050, mono=True)
 
     except Exception as e:
