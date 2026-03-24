@@ -63,7 +63,9 @@ def extract_features_from_audio(audio_bytes: bytes) -> np.ndarray:
         os.unlink(raw_tmp)
 
     try:
-        snd = parselmouth.Sound(tmp_path)
+        # --- HARDENING: Use memory buffer instead of disk (avoids Mac segfaults) ---
+        snd = parselmouth.Sound(y_raw, sampling_frequency=sr_raw)
+        # --------------------------------------------------------------------------
 
         if snd.duration < 1.0:
             raise ValueError("Audio too short (minimum 1 second required)")
