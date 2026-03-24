@@ -2,6 +2,12 @@
 # Extracts the 22 biomedical voice features from raw audio bytes
 # using parselmouth (Python Praat wrapper) — same features as UCI dataset
 
+import os
+
+# --- HARDENING: Set environment variables before any imports (prevents Mac segfaults) ---
+os.environ["NUMBA_DISABLE_JIT"] = "1"
+# --------------------------------------------------------------------------------------
+
 import parselmouth
 from parselmouth.praat import call
 import numpy as np
@@ -82,6 +88,12 @@ def extract_features_from_audio(audio_bytes: bytes) -> np.ndarray:
         flo = np.min(pitch_values)
 
         point_process = call(snd, "To PointProcess (periodic, cc)", 75, 500)
+        
+        # --- HARDENING: Check if point_process is empty before shimmer calls (prevents segfaults) ---
+        num_points = int(call(point_process, "Get number of points"))
+        if num_points < 10:
+             raise ValueError("Insufficient voicing points for analysis — please hold the vowel longer and louder.")
+        # -------------------------------------------------------------------------------------------
 
         jitter_pct  = call(point_process, "Get jitter (local)",          0, 0, 0.0001, 0.02, 1.3)
         jitter_abs  = call(point_process, "Get jitter (local, absolute)", 0, 0, 0.0001, 0.02, 1.3)
