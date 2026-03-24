@@ -165,8 +165,9 @@ const SpiralTestPage = () => {
     const formData = new FormData();
     formData.append("image", imageFile);
 
+    const ML_SERVER_URL = `http://${window.location.hostname}:5005/predict`;
     try {
-      const res = await axios.post("http://localhost:5001/predict", formData);
+      const res = await axios.post(ML_SERVER_URL, formData);
       setResult(res.data);
     } catch (err) {
       alert("AI server not running! Please run: python app.py");

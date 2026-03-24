@@ -129,10 +129,9 @@ const VoiceTestPage = () => {
     const formData = new FormData();
     formData.append("audio", audioFile, "voice.webm");
 
+    const ML_SERVER_URL = `http://${window.location.hostname}:5005/predict_voice`;
     try {
-      const res = await axios.post("http://localhost:5001/predict_voice", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post(ML_SERVER_URL, formData);
       setResult(res.data);
     } catch (err) {
       alert("Error connecting to backend or AI server!");
