@@ -21,12 +21,13 @@ exports.analyzeVoice = async (req, res) => {
 
     // Send to your Python ML voice prediction endpoint
     // → Change this URL when you deploy (e.g. to your real server or cloud endpoint)
-    const response = await axios.post('http://localhost:5001/predict_voice', form, {
+    const response = await axios.post('http://localhost:5005/predict_voice', form, {
       headers: {
         ...form.getHeaders(),       // Correct multipart boundary & content-type
       },
       maxContentLength: Infinity,   // Allow larger audio files if needed
       maxBodyLength: Infinity,
+      timeout: 60000,               // 60-second timeout for slow feature extraction
     });
 
     const { prediction, confidence } = response.data;
@@ -34,7 +35,8 @@ exports.analyzeVoice = async (req, res) => {
     // Format response consistently with spiral controller
     res.json({
       hasParkinson: prediction === "Parkinson",
-      confidence: confidence + "%",
+      prediction: prediction,
+      confidence: confidence, // Backend now sends the value without "%" (frontend adds it)
       message: prediction === "Parkinson"
         ? "Voice indicates possible Parkinson's disease"
         : "Voice appears normal"

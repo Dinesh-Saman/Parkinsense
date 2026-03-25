@@ -7,6 +7,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true); // Added loading state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
 
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }) => {
         console.error("Failed to parse stored user", err);
       }
     }
+    setLoading(false); // Done loading from storage
   }, []);
 
   // Called after a successful API login – receives { user, token }
@@ -78,6 +80,7 @@ export const AuthProvider = ({ children }) => {
         openEditProfileModal,
         closeEditProfileModal,
         updateProfile,
+        loading, // Provide loading state
       }}
     >
       {children}

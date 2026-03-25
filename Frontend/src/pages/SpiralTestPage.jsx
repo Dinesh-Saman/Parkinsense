@@ -179,9 +179,12 @@ const SpiralTestPage = () => {
     canvasRef.current.toBlob((blob) => analyzeImage(blob));
   };
 
+  const [uploadedFileName, setUploadedFileName] = useState("");
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setUploadedFileName(file.name);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
     analyzeImage(file);
@@ -654,19 +657,38 @@ const SpiralTestPage = () => {
                       </button>
                     </div>
 
-                    <img
-                      src={previewUrl}
-                      alt="Spiral"
-                      style={{
+                    {uploadedFileName.toLowerCase().endsWith(".heic") || uploadedFileName.toLowerCase().endsWith(".heif") ? (
+                      <div style={{
                         width: "100%",
                         height: isMobile ? "250px" : "300px",
-                        maxHeight: "400px",
-                        objectFit: "contain",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "#f8fafc",
                         border: "1px solid #e2e8f0",
-                        borderRadius: isMobile ? "12px" : "16px",
-                        background: "white",
-                      }}
-                    />
+                        borderRadius: "12px",
+                        color: "#64748b"
+                      }}>
+                        <FaUpload size={40} style={{ marginBottom: "10px", opacity: 0.5 }} />
+                        <p>HEIC Image Uploaded</p>
+                        <p style={{ fontSize: "0.8rem" }}>(Preview not supported in browser, but AI is analyzing...)</p>
+                      </div>
+                    ) : (
+                      <img
+                        src={previewUrl}
+                        alt="Spiral"
+                        style={{
+                          width: "100%",
+                          height: isMobile ? "250px" : "300px",
+                          maxHeight: "400px",
+                          objectFit: "contain",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: isMobile ? "12px" : "16px",
+                          background: "white",
+                        }}
+                      />
+                    )}
                   </div>
                 )}
               </div>

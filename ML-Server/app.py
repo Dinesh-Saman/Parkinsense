@@ -1,14 +1,42 @@
 # ML-Server/app.py
+import os
+import sys
+
+# --- MAC ARM64 HARDENING: Set these BEFORE any heavy imports ---
+# os.environ["NUMBA_DISABLE_JIT"] = "1"  <-- Removed to fix 'get_call_template' error
+os.environ["NUMBA_CACHE_DIR"] = "/tmp/numba_cache"
+os.environ["MPLBACKEND"] = "Agg"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+# -------------------------------------------------------------
+
+# --- HEIC SUPPORT: Register HEIF opener for PIL ---
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:
+    print("⚠️ [app] Warning: pillow-heif not installed. HEIC support will be disabled.")
+# --------------------------------------------------
+
+# --- STABILIZATION: Import these early to avoid C-level thread crashes ---
+try:
+    import parselmouth
+    import librosa
+    import soundfile
+except Exception as e:
+    print(f"⚠️ [app] Warning: Early library import failed: {e}")
+# ----------------------------------------------------------------------
+
 from flask import Flask, request, jsonify
-from flask_cors import CORS   # ← THIS LINE ADDED
+from flask_cors import CORS
 from PIL import Image
 import torch
 from torchvision import transforms, models
-import os
 from voice.voice_predict import predict_voice
 
 app = Flask(__name__)
-CORS(app)   # ← THIS ALLOWS REACT TO CONNECT!
+CORS(app)
 
 # Load model
 # Use weights=None to fix UserWarning and modern torchvision API

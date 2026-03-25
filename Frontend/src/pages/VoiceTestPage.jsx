@@ -78,7 +78,12 @@ const VoiceTestPage = () => {
   };
 
 
-  // Recording timer
+  // Add refs for manual WAV recording (fixes WebM decoding on Mac)
+  const audioContextRef = useRef(null);
+  const processorRef = useRef(null);
+  const leftChannelRef = useRef([]);
+
+  // Recording timer (Restore)
   useEffect(() => {
     let interval;
     if (isRecording) {
@@ -92,58 +97,127 @@ const VoiceTestPage = () => {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 22050 });
+      const source = audioContextRef.current.createMediaStreamSource(stream);
       
-      const getSupportedMimeType = () => {
-        const types = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg", "audio/mp4", "audio/aac"];
-        for (const type of types) {
-          if (MediaRecorder.isTypeSupported(type)) return type;
-        }
-        return "";
+      // ScriptProcessor is deprecated but very stable for single-file encoding on Mac
+      processorRef.current = audioContextRef.current.createScriptProcessor(4096, 1, 1);
+      leftChannelRef.current = [];
+
+      processorRef.current.onaudioprocess = (e) => {
+        const left = e.inputBuffer.getChannelData(0);
+        leftChannelRef.current.push(new Float32Array(left));
       };
 
-      const mimeType = getSupportedMimeType();
-      console.log("Using MIME type:", mimeType);
+      source.connect(processorRef.current);
+      processorRef.current.connect(audioContextRef.current.destination);
 
-      mediaRecorderRef.current = new MediaRecorder(stream, mimeType ? { mimeType } : {});
-      audioChunksRef.current = [];
-
-      mediaRecorderRef.current.ondataavailable = (e) => {
-        audioChunksRef.current.push(e.data);
-      };
-
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: mediaRecorderRef.current.mimeType || "audio/webm" });
-        setAudioBlob(blob);
-        const url = URL.createObjectURL(blob);
-        setPreviewUrl(url);
-        analyzeAudio(blob);
-      };
-
-      mediaRecorderRef.current.start();
       setIsRecording(true);
       setRecordingTime(0);
+      setAudioBlob(null);
+      setPreviewUrl(null);
+      setResult(null);
+      
+      // Clean up stream on stop
+      mediaRecorderRef.current = stream; 
     } catch (err) {
       alert("Microphone access denied or not available.");
+      console.error(err);
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
+    if (processorRef.current) {
+      processorRef.current.onaudioprocess = null;
+      processorRef.current.disconnect();
+      if (audioContextRef.current) audioContextRef.current.close();
+      
+      // Stop all tracks in stream
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.getTracks().forEach(track => track.stop());
+      }
+
       setIsRecording(false);
+      
+      // Munge all Float32 chunks into a single WAV blob
+      const buffer = flattenArray(leftChannelRef.current);
+      const wavBlob = encodeWAV(buffer, 22050);
+      
+      console.log("Recording stopped. Format: WAV, Size:", wavBlob.size);
+      setAudioBlob(wavBlob);
+      const url = URL.createObjectURL(wavBlob);
+      setPreviewUrl(url);
+      analyzeAudio(wavBlob, "recording.wav");
     }
   };
 
-  const analyzeAudio = async (audioFile) => {
+  // Helper: Join PCM fragments
+  const flattenArray = (channelBuffer) => {
+    let result = new Float32Array(channelBuffer.reduce((acc, val) => acc + val.length, 0));
+    let offset = 0;
+    for (let i = 0; i < channelBuffer.length; i++) {
+      result.set(channelBuffer[i], offset);
+      offset += channelBuffer[i].length;
+    }
+    return result;
+  };
+
+  // Helper: RIFF/WAV Header Encoder
+  const encodeWAV = (samples, sampleRate) => {
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+
+    const writeString = (view, offset, string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + samples.length * 2, true); // Total file size - 8
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(view, 36, 'data');
+    view.setUint32(40, samples.length * 2, true);
+
+    // Normalize amplitude only if it's above a noise floor (prevent boosting silence)
+    let maxVal = 0;
+    for (let i = 0; i < samples.length; i++) {
+        const abs = Math.abs(samples[i]);
+        if (abs > maxVal) maxVal = abs;
+    }
+    
+    // Only scale if the recording is loud enough to be a real voice (noise floor = 0.01)
+    const scale = maxVal > 0.01 ? (0.9 / maxVal) : 1; 
+
+    let offset = 44;
+    for (let i = 0; i < samples.length; i++, offset += 2) {
+      let s = Math.max(-1, Math.min(1, samples[i] * scale));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+
+    return new Blob([view], { type: 'audio/wav' });
+  };
+  const min = (a, b) => a < b ? a : b;
+
+  const analyzeAudio = async (audioFile, fileName = "voice.wav") => {
     setLoading(true);
     setResult(null);
 
     const formData = new FormData();
-    formData.append("audio", audioFile, "voice.webm");
+    formData.append("audio", audioFile, fileName);
 
-    const ML_SERVER_URL = `http://${window.location.hostname}:5005/predict_voice`;
     try {
-      const res = await axios.post(ML_SERVER_URL, formData);
+      const res = await axios.post("http://localhost:5002/api/voice/analyze", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setResult(res.data);
     } catch (err) {
       alert("Error connecting to backend or AI server!");
@@ -239,7 +313,7 @@ const VoiceTestPage = () => {
             lineHeight: "1.6",
             padding: isMobile ? "0 10px" : "0"
           }}>
-            {t("voice_instruction")}
+            {t("Speak clearly for 15 seconds. Our AI will analyze your voice for Parkinson's indicators.")}
           </p>
         </div>
 
@@ -346,7 +420,7 @@ const VoiceTestPage = () => {
 
                   {!isRecording && (
                     <button
-                      onClick={() => speak(t("voice_instruction"))}
+                      onClick={() => speak(t("Speak clearly for 15 seconds. Our AI will analyze your voice for Parkinson's indicators."))}
                       style={{
                         marginTop: "15px",
                         padding: isMobile ? "8px 16px" : "10px 20px",

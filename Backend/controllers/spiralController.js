@@ -19,18 +19,20 @@ exports.analyzeSpiral = async (req, res) => {
 
     // Send to your ML prediction endpoint
     // Change URL to your actual deployed ML service (see recommendations below)
-    const response = await axios.post('http://localhost:5001/predict', form, {
+    const response = await axios.post('http://localhost:5005/predict', form, {
       headers: {
         ...form.getHeaders(),       // Includes correct multipart boundary
       },
       maxContentLength: Infinity,   // Optional: allow large images
       maxBodyLength: Infinity,
+      timeout: 30000,               // 30-second timeout
     });
 
     const { prediction, confidence } = response.data;
 
     res.json({
       hasParkinson: prediction === "Parkinson",
+      prediction: prediction,
       confidence: (confidence * 100).toFixed(2) + "%",
       message: prediction === "Parkinson"
         ? "Spiral indicates possible Parkinson's disease"

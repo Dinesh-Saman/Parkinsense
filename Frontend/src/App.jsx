@@ -39,10 +39,14 @@ import EditProfileModal from "./components/EditProfileModal";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, openAuthModal } = useAuth();
+  const { user, loading } = useAuth();
   
+  if (loading) {
+    // Show nothing or a small spinner during hydration check
+    return null;
+  }
+
   if (!user) {
-    // Optional: trigger modal here if they try to access directly
     return <Navigate to="/" replace />;
   }
 

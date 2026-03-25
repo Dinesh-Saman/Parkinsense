@@ -3,7 +3,7 @@ const multer = require('multer');
 const spiralController = require('../controllers/spiralController');
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/analyze', upload.single('image'), spiralController.analyzeSpiral);
 
