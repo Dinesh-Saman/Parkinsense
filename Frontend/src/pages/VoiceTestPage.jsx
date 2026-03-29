@@ -96,30 +96,57 @@ const VoiceTestPage = () => {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 22050 });
-      const source = audioContextRef.current.createMediaStreamSource(stream);
+      // CRITICALLY IMPORTANT FOR MEDICAL VOICE ANALYSIS:
+      // Turn off browser audio processing (AGC/Noise Suppression) which heavily distorts micro-tremors and injects artificial jitter
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: { 
+              autoGainControl: false, 
+              echoCancellation: false, 
+              noiseSuppression: false 
+          } 
+      });
       
-      // ScriptProcessor is deprecated but very stable for single-file encoding on Mac
-      processorRef.current = audioContextRef.current.createScriptProcessor(4096, 1, 1);
-      leftChannelRef.current = [];
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
 
-      processorRef.current.onaudioprocess = (e) => {
-        const left = e.inputBuffer.getChannelData(0);
-        leftChannelRef.current.push(new Float32Array(left));
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
 
-      source.connect(processorRef.current);
-      processorRef.current.connect(audioContextRef.current.destination);
+      mediaRecorderRef.current.onstop = async () => {
+        const webmBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        console.log("Recording stopped. Format: WEBM, Size:", webmBlob.size);
+        
+        // Decode WEBM natively in browser and convert to standard WAV for Python backend
+        try {
+            const arrayBuffer = await webmBlob.arrayBuffer();
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            
+            const wavBlob = bufferToWav(audioBuffer);
+            setAudioBlob(wavBlob);
+            const url = URL.createObjectURL(wavBlob);
+            setPreviewUrl(url);
+            analyzeAudio(wavBlob, "recording.wav");
+        } catch (err) {
+            console.error("Audio decoding failed:", err);
+            // Fallback
+            setAudioBlob(webmBlob);
+            const url = URL.createObjectURL(webmBlob);
+            setPreviewUrl(url);
+            analyzeAudio(webmBlob, "recording.webm");
+        }
+      };
 
+      mediaRecorderRef.current.start();
       setIsRecording(true);
       setRecordingTime(0);
       setAudioBlob(null);
       setPreviewUrl(null);
       setResult(null);
       
-      // Clean up stream on stop
-      mediaRecorderRef.current = stream; 
     } catch (err) {
       alert("Microphone access denied or not available.");
       console.error(err);
@@ -127,44 +154,33 @@ const VoiceTestPage = () => {
   };
 
   const stopRecording = () => {
-    if (processorRef.current) {
-      processorRef.current.onaudioprocess = null;
-      processorRef.current.disconnect();
-      if (audioContextRef.current) audioContextRef.current.close();
-      
-      // Stop all tracks in stream
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.getTracks().forEach(track => track.stop());
-      }
-
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       setIsRecording(false);
-      
-      // Munge all Float32 chunks into a single WAV blob
-      const buffer = flattenArray(leftChannelRef.current);
-      const wavBlob = encodeWAV(buffer, 22050);
-      
-      console.log("Recording stopped. Format: WAV, Size:", wavBlob.size);
-      setAudioBlob(wavBlob);
-      const url = URL.createObjectURL(wavBlob);
-      setPreviewUrl(url);
-      analyzeAudio(wavBlob, "recording.wav");
     }
   };
 
-  // Helper: Join PCM fragments
-  const flattenArray = (channelBuffer) => {
-    let result = new Float32Array(channelBuffer.reduce((acc, val) => acc + val.length, 0));
-    let offset = 0;
-    for (let i = 0; i < channelBuffer.length; i++) {
-      result.set(channelBuffer[i], offset);
-      offset += channelBuffer[i].length;
+  const bufferToWav = (audioBuffer) => {
+    const numOfChan = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const format = 1; // PCM
+    const bitDepth = 16;
+    
+    let result;
+    if (numOfChan === 2) {
+      const left = audioBuffer.getChannelData(0);
+      const right = audioBuffer.getChannelData(1);
+      result = new Float32Array(left.length + right.length);
+      for (let i = 0; i < left.length; i++) {
+        result[i * 2] = left[i];
+        result[i * 2 + 1] = right[i];
+      }
+    } else {
+      result = audioBuffer.getChannelData(0);
     }
-    return result;
-  };
 
-  // Helper: RIFF/WAV Header Encoder
-  const encodeWAV = (samples, sampleRate) => {
-    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const buffer = new ArrayBuffer(44 + result.length * 2);
     const view = new DataView(buffer);
 
     const writeString = (view, offset, string) => {
@@ -174,38 +190,27 @@ const VoiceTestPage = () => {
     };
 
     writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + samples.length * 2, true); // Total file size - 8
+    view.setUint32(4, 36 + result.length * 2, true);
     writeString(view, 8, 'WAVE');
     writeString(view, 12, 'fmt ');
     view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
+    view.setUint16(20, format, true);
+    view.setUint16(22, numOfChan, true);
     view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
+    view.setUint32(28, sampleRate * numOfChan * 2, true);
+    view.setUint16(32, numOfChan * 2, true);
+    view.setUint16(34, bitDepth, true);
     writeString(view, 36, 'data');
-    view.setUint32(40, samples.length * 2, true);
-
-    // Normalize amplitude only if it's above a noise floor (prevent boosting silence)
-    let maxVal = 0;
-    for (let i = 0; i < samples.length; i++) {
-        const abs = Math.abs(samples[i]);
-        if (abs > maxVal) maxVal = abs;
-    }
-    
-    // Only scale if the recording is loud enough to be a real voice (noise floor = 0.01)
-    const scale = maxVal > 0.01 ? (0.9 / maxVal) : 1; 
+    view.setUint32(40, result.length * 2, true);
 
     let offset = 44;
-    for (let i = 0; i < samples.length; i++, offset += 2) {
-      let s = Math.max(-1, Math.min(1, samples[i] * scale));
+    for (let i = 0; i < result.length; i++, offset += 2) {
+      let s = Math.max(-1, Math.min(1, result[i]));
       view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
     }
 
     return new Blob([view], { type: 'audio/wav' });
   };
-  const min = (a, b) => a < b ? a : b;
 
   const analyzeAudio = async (audioFile, fileName = "voice.wav") => {
     setLoading(true);
@@ -220,7 +225,11 @@ const VoiceTestPage = () => {
       });
       setResult(res.data);
     } catch (err) {
-      alert("Error connecting to backend or AI server!");
+      if (err.response && err.response.data && err.response.data.error) {
+        alert(err.response.data.error.replace("Analysis failed: ", "").replace("Voice processing failed: ", ""));
+      } else {
+        alert("Error connecting to backend or AI server!");
+      }
       console.error(err);
     }
     setLoading(false);

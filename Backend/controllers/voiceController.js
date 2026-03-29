@@ -44,8 +44,12 @@ exports.analyzeVoice = async (req, res) => {
 
   } catch (error) {
     console.error("Voice analysis error:", error.message);
-    if (error.response) {
+    if (error.response && error.response.data && error.response.data.error) {
       console.error("ML voice endpoint response:", error.response.data);
+      return res.status(error.response.status || 500).json({
+        error: error.response.data.error,
+        details: error.message
+      });
     }
     res.status(500).json({
       error: "Failed to analyze voice recording",

@@ -160,12 +160,7 @@ def train_best_model(X, y):
             y_pred = model.predict(X_test_sel)
             acc = accuracy_score(y_test, y_pred)
             
-            # Artificial Accuracy Cap for Random Forest to enforce 84.62% limit
-            if name == 'Random Forest' and acc > 0.85:
-                # Force accuracy to exactly 11 out of 13 correct
-                acc = 11 / 13
-            
-            # Update individual best score
+            # Keep the true accuracy for all models
             if acc > best_model_scores[name]:
                 best_model_scores[name] = acc
             

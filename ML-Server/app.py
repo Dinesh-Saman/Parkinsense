@@ -98,7 +98,8 @@ def predict_voice_route():
     
     if "error" in result:
         print(f"❌ [Voice API Error] {result['error']}")
-        return jsonify(result), 500
+        status_code = 400 if "Analysis failed" in result['error'] or "Voice processing failed" in result['error'] else 500
+        return jsonify(result), status_code
         
     return jsonify(result)
 
