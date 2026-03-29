@@ -81,7 +81,7 @@ def predict_voice(audio_content: bytes) -> dict:
 
         pred_label = _model.predict(features_final)[0]            # 0=healthy, 1=PD
         proba      = _model.predict_proba(features_final)[0]      # [P(healthy), P(PD)]
-        pd_prob    = proba[1]
+        pd_prob    = float(proba[1])  # cast numpy float32 → Python float for JSON serialization
 
         # Set threshold to 0.60 to strictly avoid False Positives (Healthy users being told they have PD)
         # This increases specificity, ensuring we only flag clear Parkinson cases.
