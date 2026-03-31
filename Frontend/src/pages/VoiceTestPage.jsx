@@ -241,7 +241,7 @@ const VoiceTestPage = () => {
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
     setAudioBlob(file);
-    analyzeAudio(file);
+    analyzeAudio(file, file.name);
   };
 
   const clearRecording = () => {

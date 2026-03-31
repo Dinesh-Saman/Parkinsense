@@ -16,7 +16,7 @@ try:
     from pillow_heif import register_heif_opener
     register_heif_opener()
 except ImportError:
-    print("⚠️ [app] Warning: pillow-heif not installed. HEIC support will be disabled.")
+    print("[app] Warning: pillow-heif not installed. HEIC support will be disabled.")
 # --------------------------------------------------
 
 # --- STABILIZATION: Import these early to avoid C-level thread crashes ---
@@ -25,7 +25,7 @@ try:
     import librosa
     import soundfile
 except Exception as e:
-    print(f"⚠️ [app] Warning: Early library import failed: {e}")
+    print(f"[app] Warning: Early library import failed: {e}")
 # ----------------------------------------------------------------------
 
 from flask import Flask, request, jsonify
@@ -52,7 +52,7 @@ if os.path.exists(model_path):
     model.eval()
     print(f"[app] Spiral model loaded from {model_path}")
 else:
-    print(f"⚠️ [app] Warning: Spiral model not found at {model_path}")
+    print(f"[app] Warning: Spiral model not found at {model_path}")
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -92,12 +92,13 @@ def predict_voice_route():
         return jsonify({"error": "No audio file"}), 400
     
     audio_file = request.files["audio"]
+    filename = audio_file.filename
     audio_content = audio_file.read()
     
-    result = predict_voice(audio_content)
+    result = predict_voice(audio_content, filename=filename)
     
     if "error" in result:
-        print(f"❌ [Voice API Error] {result['error']}")
+        print(f"[Voice API Error]: {result['error']}")
         status_code = 400 if "Analysis failed" in result['error'] or "Voice processing failed" in result['error'] else 500
         return jsonify(result), status_code
         
